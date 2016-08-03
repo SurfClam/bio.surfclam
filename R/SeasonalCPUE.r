@@ -1,3 +1,4 @@
+#' @export
 SeasonalCPUE<-function(vmslogdata,yrs,subpolys,lab='',graphic='R',wd=8,ht=11,err='sd',effort.min=0.015,...){
 
 	

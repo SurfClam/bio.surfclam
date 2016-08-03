@@ -1,3 +1,4 @@
+#' @export
 SPMfit.plt <- function(model.out,yrs,name="", rows=3, CI=F,CV=F,H=1,Uadj=1,graphic='R',ymax,alpha=0.05,path=file.path( project.datadirectory("offshoreclams"), "figures"),ht=8,wd=6){
 
   # Fit plots

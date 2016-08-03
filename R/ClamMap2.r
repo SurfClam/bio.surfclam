@@ -1,3 +1,4 @@
+#' @export
 #	source("fn/LobsterMap.r")
 
 ### MAPS Lobster FISHING AREAS IN R!

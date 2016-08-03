@@ -1,3 +1,4 @@
+#' @export
 GetVMSData <- function(update=T){
   ##############################################################################
   # Get data from database
@@ -48,10 +49,10 @@ vms.q <- paste("SELECT rownum vesid,
   vms.data <- sqlQuery(RODBCconn, vms.q, believeNRows=FALSE)  
   odbcClose(RODBCconn)
 
-  save(vms.data,file=file.path( project.datadirectory("offshoreclams"), "data", "VMSdata.Rdata" ))
+  save(vms.data,file=file.path( project.datadirectory("bio.surfclam"), "data", "VMSdata.Rdata" ))
   }
   else {
-  	load(file.path( project.datadirectory("offshoreclams"), "data", "VMSdata.Rdata" ))
+  	load(file.path( project.datadirectory("bio.surfclam"), "data", "VMSdata.Rdata" ))
   }
  return(vms.data)
 }

@@ -1,3 +1,4 @@
+#' @export
 #// Mixed effects model for length - weight relaionlengthip
 
 LengthWeight.lme<-function(wt.dat,random.effect="TowID",verbose=T, GBmodel=F, b.par='estimate'){

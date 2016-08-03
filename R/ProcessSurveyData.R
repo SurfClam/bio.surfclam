@@ -1,3 +1,4 @@
+#' @export
 ProcessSurveyData <- function(species=80983){
 
   tows<-read.csv(  file.path(project.datadirectory("offshoreclams"),"data","Combined","Combined_Tow_dataMMM.csv"))

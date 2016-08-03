@@ -13,7 +13,7 @@
 ###############################################################################
 # To run in ecomod, run the following commands
 
-loadfunctions(c("offshoreclams","lobster","utility","spacetime","model.fishery.general"))
+RLibrary("bio.surfclam","bio.lobster","bio.utilities","bio.spacetime")
 
 RLibrary( "PBSmapping", "lubridate", "trip" ,"spatstat","TeachingDemos") # Load required packages
 
@@ -26,14 +26,14 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
   # log data
   #log.data <- GetLogData(update=update.data)
   processed.log.data <- ProcessLogData(GetLogData(update=update.data))
-  # save(processed.log.data,file=file.path( project.datadirectory("offshoreclams"), "data", "processedLogdata.Rdata" ))
+  # save(processed.log.data,file=file.path( project.datadirectory("bio.surfclam"), "data", "processedLogdata.Rdata" ))
 
   #VMS data
   #vms.data <- GetVMSData(update=update.data)
   fisheryList <- ProcessVMSData(GetVMSData(update=update.data),processed.log.data)
   #processed.log.data = fisheryList$log.data
   processed.vms.data = fisheryList$vms.data
-  load(file=file.path( project.datadirectory("offshoreclams"), "data", "griddedFisheryDataTotal.Rdata" ))
+  load(file=file.path( project.datadirectory("bio.surfclam"), "data", "griddedFisheryDataTotal.Rdata" ))
 
   # length frequency data
   lf.data <- GetLFData(update=update.data)
@@ -47,11 +47,11 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
   Banq100 <- na.omit(subset(c100,SID==2392)) # 100m isobath for Banqureau
 
   # Clearwater Zones
-  #CWzones <- read.table(file.path( project.datadirectory("offshoreclams"), "data","maps","polyBBrot.txt"),header=F)
+  #CWzones <- read.table(file.path( project.datadirectory("bio.surfclam"), "data","maps","polyBBrot.txt"),header=F)
   #names(CWzones) = c("PID","X","Y")
   #CWzones$POS = 1:nrow(CWzones)
-  #write.csv(CWzones[,c("PID","POS","X","Y")],file.path( project.datadirectory("offshoreclams"), "data","maps","CWzones.csv"),row.names=F)
-  CWzones <- read.csv(file.path( project.datadirectory("offshoreclams"), "data","maps","CWzones.csv"))
+  #write.csv(CWzones[,c("PID","POS","X","Y")],file.path( project.datadirectory("bio.surfclam"), "data","maps","CWzones.csv"),row.names=F)
+  CWzones <- read.csv(file.path( project.datadirectory("bio.surfclam"), "data","maps","CWzones.csv"))
 
 ## parameters
 
@@ -102,7 +102,7 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
 
 
   # VMS Data
-  pdf(file.path( project.datadirectory("offshoreclams"), "figures","FishingLocations.pdf"),11,8)
+  pdf(file.path( project.datadirectory("bio.surfclam"), "figures","FishingLocations.pdf"),11,8)
   for (i in 2002:2015) {
   ClamMap2('Ban',isobath=seq(50,500,50),title=i,bathy.source='bathy',nafo='all')
   with(subset(processed.log.data,year==i&area>0),points(lon_dd,lat_dd,pch=16,cex=0.5,col=rgb(1,0,0,0.2)))
@@ -119,7 +119,7 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
   VMSgif(fisheryList,yrs=2004:2015,interval=7,tail=28,pie.scale=7000,wd=800,ht=600,xlim=c(-60,-57.2),ylim=c(44,45.1),ptcex=0.2,axes=F,xlab='',ylab='',isobath=NULL,ptcol=rgb(1,0,0,0.5),poly.lst=list(VMSden.poly,data.frame(PID=1,col=rgb(0,0,0,0.2))))
 
   # plot of VMS data
-  pdf(file.path( project.datadirectory("offshoreclams"), "figures","VMSLocations.pdf"),11,8)
+  pdf(file.path( project.datadirectory("bio.surfclam"), "figures","VMSLocations.pdf"),11,8)
   ClamMap2(xlim=c(-60,-57.2),ylim=c(44.1,45),isobath=seq(50,500,50),bathy.source='bathy')
   with(fisheryList$vms.data,points(lon,lat,pch=16,cex=0.2,col=rgb(0,0,0,.1)))
   dev.off()
@@ -127,7 +127,7 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
 ###CPUE data
 
   # explore distribution of catch and effort data in order to set appropriate bounds to censor the data
-  pdf(file.path( project.datadirectory("offshoreclams"), "figures","CatchEffortDist.pdf"),8,8)
+  pdf(file.path( project.datadirectory("bio.surfclam"), "figures","CatchEffortDist.pdf"),8,8)
 
   par(mfrow=c(2,1))#,mar=c(0.2,0.2,0.2,0.2))  
   with(subset(processed.log.data,round_catch>0&round_catch<40000),hist(round_catch,breaks=100,xlim=c(0,40000),xlab="Reported Catch by Watch (kg)",main=''))
@@ -144,7 +144,7 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
   p$yrs= list(2004:2015)
   Totalgrid.out <- FisheryGridPlot(fisheryList,p,vms=T,fn='totalVMS',boundPoly=Banq100,isobath=NULL,axes=F,ht=8,wd=11,xlab='',ylab='',effort.units='km2')
   Totalgrid.out <- FisheryGridPlot(fisheryList,p,vms=T,fn='totalVMS',boundPoly=Banq100,isobath=seq(50,500,50),bathy.source='bathy',nafo='all')#,aspr=1)
-  save(Totalgrid.out,file=file.path( project.datadirectory("offshoreclams"), "data", "griddedFisheryDataTotal.Rdata" ))
+  save(Totalgrid.out,file=file.path( project.datadirectory("bio.surfclam"), "data", "griddedFisheryDataTotal.Rdata" ))
   p$yrs= list(2004:2006,2005:2007,2006:2008,2007:2009,2008:2010,2009:2011,2010:2012,2011:2013,2012:2014,2013:2015)
   3yrgrid.out <- FisheryGridPlot(fisheryList,p,vms=T,fn='3yrVMS',boundPoly=Banq100,isobath=seq(50,500,50),bathy.source='bathy',nafo='all')#,aspr=1)
 
@@ -152,10 +152,10 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
 
   #grid.out <- FisheryGridPlot(fisheryList,p,fn='annualLog',boundPoly=Banq100,isobath=seq(50,500,50),bathy.source='bathy',nafo='all')#,aspr=1)
   AnnGrid.out <- FisheryGridPlot(fisheryList,p,vms=T,fn='annualVMS',boundPoly=Banq100,isobath=seq(50,500,50),bathy.source='bathy',nafo='all')#,aspr=1)
-  write.csv(data.frame(Year=p$yrs,summarize.gridout(AnnGrid.out)),file=file.path( project.datadirectory("offshoreclams"), "R", "SpatialExploitationSummary.csv"),row.names=F )
+  write.csv(data.frame(Year=p$yrs,summarize.gridout(AnnGrid.out)),file=file.path( project.datadirectory("bio.surfclam"), "R", "SpatialExploitationSummary.csv"),row.names=F )
 
-  save(AnnGrid.out,file=file.path( project.datadirectory("offshoreclams"), "data", "griddedFisheryDataAnnual.Rdata" ))
-  load(file=file.path( project.datadirectory("offshoreclams"), "data", "griddedFisheryDataAnnual.Rdata" ))
+  save(AnnGrid.out,file=file.path( project.datadirectory("bio.surfclam"), "data", "griddedFisheryDataAnnual.Rdata" ))
+  load(file=file.path( project.datadirectory("bio.surfclam"), "data", "griddedFisheryDataAnnual.Rdata" ))
 
   GridMapPlot(AnnGrid.out,yrs=2004:2015,xl=c(-59.85,-57.45),yl=c(44.3,44.8),graphic='R',info='catch')
   GridMapPlot(AnnGrid.out,yrs=2004:2015,xl=c(-59.85,-57.45),yl=c(44.3,44.8),graphic='pdf',info='effort')
@@ -185,12 +185,12 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
   Grand = data.frame(Year=as.numeric(names(Grand.C)),Grand.Catch = Grand.C/10^3, Grand.Effort = Grand.E/10^6, Grand.CPUE = Grand.C/Grand.E*1000)
 
   Table1 = merge(Ban,Grand,all=T)
-  write.csv(Table1,file.path( project.datadirectory("offshoreclams"), "R","CatchEffort.csv"),row.names=F)
+  write.csv(Table1,file.path( project.datadirectory("bio.surfclam"), "R","CatchEffort.csv"),row.names=F)
 
   CatchEffortPlot(Table1,graphic="R")
 
   ## exploration of seasonal fishing patterns
-  pdf(file.path( project.datadirectory("offshoreclams"), "figures","SeasonalFishingPattern.pdf"),8,11)
+  pdf(file.path( project.datadirectory("bio.surfclam"), "figures","SeasonalFishingPattern.pdf"),8,11)
 
   p$yrs= 2007:2015
   par(mfrow=c(3,3),mar=c(0,0,0,0))
@@ -211,7 +211,7 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
     vmslogdata = assignLogData2VMS(fisheryList, p)
     vmslogdata = subset(vmslogdata,EID%in%findPolys(vmslogdata,Banq100, maxRows = 1e+06)$EID)
 
-  pdf(file.path( project.datadirectory("offshoreclams"), "figures","TotalRemovals.pdf"),8,11)
+  pdf(file.path( project.datadirectory("bio.surfclam"), "figures","TotalRemovals.pdf"),8,11)
 
   for(i in 1:length(p$yrs)){
     
@@ -289,7 +289,7 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
   TotalAreaBiomass = list()
   FishedAreaBiomass = list()
 
-  pdf(file.path( project.datadirectory("offshoreclams"), "figures","SurveyDensity.pdf"),11,8)
+  pdf(file.path( project.datadirectory("bio.surfclam"), "figures","SurveyDensity.pdf"),11,8)
 
 
   for(i in c(2004,2010)){
@@ -324,7 +324,7 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
   dev.off()
 
 
-  pdf(file.path( project.datadirectory("offshoreclams"), "figures","SurveyCPUEcompare.pdf"),11,8)
+  pdf(file.path( project.datadirectory("bio.surfclam"), "figures","SurveyCPUEcompare.pdf"),11,8)
 
   for(i in c(2004,2010)){
 
@@ -412,9 +412,9 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
     area2$POS=1:nrow(area2)
 
      new.areas = rbind(area1,area2,area3,area4,area5)
-     write.csv(new.areas,file.path( project.datadirectory("offshoreclams"), "R","newareas.csv"),row.names=F)
+     write.csv(new.areas,file.path( project.datadirectory("bio.surfclam"), "R","newareas.csv"),row.names=F)
   
-    pdf(file.path( project.datadirectory("offshoreclams"), "figures","newAreas.pdf"),11,8)
+    pdf(file.path( project.datadirectory("bio.surfclam"), "figures","newAreas.pdf"),11,8)
       ClamMap2("Ban",isobath=seq(50,500,50),bathy.source='bathy')
       addPolys(area1,col=rgb(0,1,0,0.2))
       addPolys(area2,col=rgb(1,0,1,0.2))
@@ -426,7 +426,7 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
       addLabels(data.frame(PID=1:5,label=1:5),polys=new.areas,placement="CENTROID",cex=2,font=2)
     dev.off()
    
-  new.areas  = read.csv(file.path( project.datadirectory("offshoreclams"), "R","newareas.csv"))
+  new.areas  = read.csv(file.path( project.datadirectory("bio.surfclam"), "R","newareas.csv"))
 
   attr(new.areas,"projection")<-"LL"
   totalareas = calcArea(new.areas) 
@@ -448,13 +448,13 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
   areaCatches = rbind(areaCatchesBU,colMeans(areaCatchesBU))
   areaCatches = cbind(areaCatches,rowSums(areaCatches))
   dimnames(areaCatches)<-list(c(yrs,"Mean"),c(paste("Area",1:5),"Total"))
-  write.csv(areaCatches,file.path( project.datadirectory("offshoreclams"), "R","areaCatches.csv"))
+  write.csv(areaCatches,file.path( project.datadirectory("bio.surfclam"), "R","areaCatches.csv"))
 
   areaBiomass = SPMdataList$O
   areaBiomass = rbind(areaBiomass,colMeans(areaBiomass))
   areaBiomass = cbind(areaBiomass,rowSums(areaBiomass))
   dimnames(areaBiomass)<-list(c(yrs,"Mean"),c(paste("Area",1:5),"Total"))
-  write.csv(areaBiomass,file.path( project.datadirectory("offshoreclams"), "R","areaBiomass.csv"))
+  write.csv(areaBiomass,file.path( project.datadirectory("bio.surfclam"), "R","areaBiomass.csv"))
 
   keyf = findPolys(fishedarea,new.areas)
   keyt = findPolys(totalarea,new.areas)
@@ -465,7 +465,7 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
   areaSummary = data.frame(totalareas,fished.area = SPMdata$Habitat, avg.annual.catch = colMeans(areaCatchesBU), total.catch.since.2004 = colSums(areaCatchesBU), biomass.survey.2010.total.area =with(totalarea,tapply(Z,PID,sum)),biomass.survey.2010 =with(fishedarea,tapply(Z,PID,sum)), biomass.cpue.2010 =SPMdataList$O['2010',], biomass.cpue.2015 = SPMdataList$O['2015',])
   areaSummary = rbind(areaSummary,colSums(areaSummary))
   areaSummary$PID[6] = "Total"
-  write.csv(areaSummary,file.path( project.datadirectory("offshoreclams"), "R","areaSummary.csv"),row.names=F)
+  write.csv(areaSummary,file.path( project.datadirectory("bio.surfclam"), "R","areaSummary.csv"),row.names=F)
 
 
 
@@ -489,16 +489,16 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
   oldlogdata = subset(oldlogdata,EID%in%findPolys(oldlogdata,Banq100, maxRows = 1e+06)$EID)
  
   # create a polygon from vms density as a proxy for clam habitat
-  pdf(file.path( project.datadirectory("offshoreclams"), "figures","VMSdensity.pdf"),12,6)
+  pdf(file.path( project.datadirectory("bio.surfclam"), "figures","VMSdensity.pdf"),12,6)
   VMSden.poly = vmsDensity(vmslogdata,sig=0.2,res=0.1,lvl=20)
   dev.off()
-  new.areas  = read.csv(file.path( project.datadirectory("offshoreclams"), "R","newareas.csv"))
+  new.areas  = read.csv(file.path( project.datadirectory("bio.surfclam"), "R","newareas.csv"))
 
   # sensitivity
   lvls=c(10,15,20,25,30,35,40,45,50)
   fishedarea=c()
   for(i in 1:length(lvls)){
-   pdf(file.path( project.datadirectory("offshoreclams"), "figures",paste0("VMSdensity",lvls[i],".pdf")),12,6)
+   pdf(file.path( project.datadirectory("bio.surfclam"), "figures",paste0("VMSdensity",lvls[i],".pdf")),12,6)
    VMSden.poly = vmsDensity(vmslogdata,sig=0.2,res=0.1,lvl=lvls[i])
     fishedarea[i] = calcArea(VMSden.poly,1)$area
   dev.off()
@@ -506,7 +506,7 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
 
   #VMSden.poly = joinPolys(VMSden.poly,junk,operation="DIFF")
 
-  pdf(file.path( project.datadirectory("offshoreclams"), "figures","NewAreas2.pdf"),11,8)
+  pdf(file.path( project.datadirectory("bio.surfclam"), "figures","NewAreas2.pdf"),11,8)
     ClamMap2("Ban",isobath=NULL,axes=F,xlab='',ylab='')
     addPolys(VMSden.poly,col=rgb(0,0,0,0.2))
     #addPolys(CWzones)
@@ -579,11 +579,11 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
     ) 
 
     SPmodel1.out<-runBUGS("SPhyper1", SPMdataList, SPMpriors, SPMdataList$yrs, n = 600000, burn = 200000, thin = 10,debug=F,parameters=c(names(SPMpriors),'K','P','r','B0'),sw='jags',inits=F)
-    save(SPmodel1.out,file=file.path( project.datadirectory("offshoreclams"), "data", "SPM1output.Rdata" ))
-    #load(file=file.path( project.datadirectory("offshoreclams"), "data", "SPM1output.Rdata" ))
+    save(SPmodel1.out,file=file.path( project.datadirectory("bio.surfclam"), "data", "SPM1output.Rdata" ))
+    #load(file=file.path( project.datadirectory("bio.surfclam"), "data", "SPM1output.Rdata" ))
     SPmodel1.out$median
     Biomass=data.frame(Year=yrs,round(sweep(SPmodel1.out$median$P,2,SPmodel1.out$median$K,'*')))
-    write.csv(Biomass,file.path( project.datadirectory("offshoreclams"), "R","modelBiomass.csv"),row.names=F)
+    write.csv(Biomass,file.path( project.datadirectory("bio.surfclam"), "R","modelBiomass.csv"),row.names=F)
 
     # hyperprior
     SPMpriors$r = list(a=log(SPmodel1.out$median$r.u), b=SPmodel1.out$median$r.sd,   d="dlnorm",    i1=0.2, i2=0.1, l=1   )
@@ -637,8 +637,8 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
     ) 
 
     SPmodel2.out<-runBUGS("SPhyper1", SPMdataList, SPMpriors, SPMdataList$yrs, n = 600000, burn = 100000, thin = 100,debug=F,parameters=c(names(SPMpriors),'K','P','r','B0'),sw='jags',inits=F)
-    save(SPmodel1.out,file=file.path( project.datadirectory("offshoreclams"), "data", "SPM2output.Rdata" ))
-    #load(file=file.path( project.datadirectory("offshoreclams"), "data", "SPM1output.Rdata" ))
+    save(SPmodel1.out,file=file.path( project.datadirectory("bio.surfclam"), "data", "SPM2output.Rdata" ))
+    #load(file=file.path( project.datadirectory("bio.surfclam"), "data", "SPM1output.Rdata" ))
     SPmodel2.out$median
 
     # hyperprior

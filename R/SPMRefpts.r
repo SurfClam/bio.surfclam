@@ -1,3 +1,4 @@
+#' @export
 SPMRefpts = function(o,graphic="R",areas=1:5,nc=1,xmax=c(150000,30000,0.5),ymax=1.15,Lb=100,ht=9,wd=7,...){
 
 

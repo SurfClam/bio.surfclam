@@ -1,3 +1,4 @@
+#' @export
 SPMsetup = function(vmslogdata,grid.out,vmspoly,subpolys,yrs=2003:2015,effort.min=100000,r=5,n.min=7,cv=F,cv.min=0.01,err='sd'){
   
   if(missing(subpolys)){

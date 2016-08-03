@@ -1,3 +1,4 @@
+#' @export
 FisheryGridPlot <- function(fisheryList, p, boundPoly, vms=FALSE, fn='',cpue=TRUE, aspr='calculate', lg.place="bottomright",effort.units='ha',wd=11,ht=8,outsideBorder=F,...){
 
   if(effort.units=='ha')efadj=10^4

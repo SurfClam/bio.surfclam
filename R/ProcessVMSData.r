@@ -1,3 +1,4 @@
+#' @export
 
 ProcessVMSData <- function(vms.data,log.data){
   

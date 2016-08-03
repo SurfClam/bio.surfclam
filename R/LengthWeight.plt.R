@@ -1,3 +1,4 @@
+#' @export
 #//	plots result of LengthWeight.lme	
 
 LengthWeight.plt <- function(htwt.fit,graphic='pdf',ht=7,wd=7,cx=1,lw=2,xl,yl,xlab="Length (mm)",ylab="Weight (g)",fn=''){

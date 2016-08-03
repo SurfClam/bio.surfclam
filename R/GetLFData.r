@@ -1,3 +1,4 @@
+#' @export
 GetLFData <- function(update=T){
   ##############################################################################
   # Get data from database, download whole view "COM_LEN_FREQ'

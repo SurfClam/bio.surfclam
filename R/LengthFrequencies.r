@@ -1,3 +1,4 @@
+#' @export
 LengthFrequencies=function(DataList, bins=seq(0,200,1), Yrs=2005:2014, wal, fn='',... ) {
 
     ### Carapace Length Frequencies (CLF)

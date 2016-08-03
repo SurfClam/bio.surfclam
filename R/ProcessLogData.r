@@ -1,3 +1,4 @@
+#' @export
 
 ProcessLogData <- function(log.data){
   

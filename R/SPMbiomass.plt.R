@@ -1,3 +1,4 @@
+#' @export
 SPMbiomass.plt <- function(model.out,yrs,name="", rows=3, CI=F,graphic='R',ymax,alpha=0.05,refs=NULL,refcol=rgb(0,1,0,0.8),path=file.path( project.datadirectory("offshoreclams"), "figures"),ht=8,wd=6){
 
   # SPMbiomass plots

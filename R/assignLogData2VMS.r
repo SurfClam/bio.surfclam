@@ -1,3 +1,4 @@
+#' @export
 assignLogData2VMS = function(fisheryList, p){
 
   b=ifelse(p$bank=="Ban",1,2)

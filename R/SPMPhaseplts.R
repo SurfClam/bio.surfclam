@@ -1,3 +1,4 @@
+#' @export
 SPMPhaseplts = function(o,graphic="R",areas=1:5,nc=2,ht=7.5,wd=6,ymax=2.5,xmax=4,...){
 
 	#phase plots

@@ -1,3 +1,4 @@
+#' @export
 GetLogData <- function(update=T){
   ##############################################################################
   # Get data from database
@@ -59,10 +60,10 @@ to_char(M.RECORD_DATE, 'YYYY-MM-DD') RECORD_DATE, M.START_TIME, to_char(M.RECORD
    AND GEAR.LOGGEAR_ID = M.LOGGEAR_ID" 
     log.data <- sqlQuery(RODBCconn, log.q)
     odbcClose(RODBCconn)
-    save(log.data,file=file.path( project.datadirectory("offshoreclams"), "data", "Logdata.Rdata" ))
+    save(log.data,file=file.path( project.datadirectory("bio.surfclam"), "data", "Logdata.Rdata" ))
   }
   else {
-  	load(file.path( project.datadirectory("offshoreclams"), "data", "Logdata.Rdata" ))
+  	load(file.path( project.datadirectory("bio.surfclam"), "data", "Logdata.Rdata" ))
   }
  return(log.data)
 }

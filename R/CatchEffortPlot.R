@@ -1,3 +1,4 @@
+#' @export
 CatchEffortPlot = function(CatchEffortData,yrs,graphic='R',col=rgb(0,1,0,0.8),ht=8,wd=6,path=file.path( project.datadirectory("offshoreclams"), "figures")){
 
   # CatchEffortPlots

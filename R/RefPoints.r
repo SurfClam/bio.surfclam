@@ -1,3 +1,4 @@
+#' @export
 s.RefPoints<-function(type=c('MSY','BMSY','FMSY'),r,K,err) {
 		#transform model estimates from state space schaefer to stochastic reference points after Bousquet et al .2008
 			if(type=='MSY') {

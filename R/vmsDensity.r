@@ -1,3 +1,4 @@
+#' @export
 vmsDensity = function(vmslogdata,sig=0.1,res=0.25,lvl=30){
 
 	require(spatstat)

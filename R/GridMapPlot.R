@@ -1,3 +1,4 @@
+#' @export
 GridMapPlot = function(grid.out,yrs=yrs,nr=ceiling(length(yrs)/nc),nc=2,wd=8,ht=11,graphic="R",info="catch",xl=c(-60.0,-57.0),yl=c(44,45.25)){
 
  
