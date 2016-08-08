@@ -43,7 +43,7 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
   surveyList <- ProcessSurveyData()
 
   # bounding polygon at 100m isobath for Banquereau
-  c100 <- read.table(file.path( project.datadirectory("polygons"), "data","Basemaps","Marine","Bathymetry","CHS100.ll"),header=T)
+  c100 <- read.table(file.path( project.datadirectory("bio.polygons"), "data","Basemaps","Marine","Bathymetry","CHS100.ll"),header=T)
   Banq100 <- na.omit(subset(c100,SID==2392)) # 100m isobath for Banqureau
 
   # Clearwater Zones
@@ -473,8 +473,6 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
 
 ############## Production model ################
 
-  loadfunctions(c("offshoreclams","lobster","utility","spacetime","model.fishery.general"))
-  
 
   #interp.data <- na.omit(subset(surveyList$surveyData,year==i&towtype%in%c(1,4)&towquality==1,c('EID','X','Y','stdcatch')))
 

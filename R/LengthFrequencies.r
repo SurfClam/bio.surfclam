@@ -3,7 +3,7 @@ LengthFrequencies=function(DataList, bins=seq(0,200,1), Yrs=2005:2014, wal, fn='
 
     ### Carapace Length Frequencies (CLF)
 
-    rootdir=file.path(project.datadirectory('offshoreclams'),'figures')
+    rootdir=file.path(project.datadirectory("bio.surfclam"),'figures')
 
     lftrips = unique(DataList$lf.data$logtrip_id)
     iCLF = list()

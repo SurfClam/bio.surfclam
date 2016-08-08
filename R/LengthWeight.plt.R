@@ -4,7 +4,7 @@
 LengthWeight.plt <- function(htwt.fit,graphic='pdf',ht=7,wd=7,cx=1,lw=2,xl,yl,xlab="Length (mm)",ylab="Weight (g)",fn=''){
 
 	
-	if(graphic=='pdf')pdf(file.path(project.datadirectory('offshoreclams'),'figures',paste0("LenWt",fn,".pdf")), width = wd, height = ht, pointsize = 14)
+	if(graphic=='pdf')pdf(file.path(project.datadirectory("bio.surfclam"),'figures',paste0("LenWt",fn,".pdf")), width = wd, height = ht, pointsize = 14)
 	if(graphic=='R')x11(wd,ht)
 
 	par(mar = c(2,2,0,0), omi = c(0.5, 0.5, 0.1, 0.1))

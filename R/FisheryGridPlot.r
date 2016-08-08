@@ -31,7 +31,7 @@ FisheryGridPlot <- function(fisheryList, p, boundPoly, vms=FALSE, fn='',cpue=TRU
    # EFFORT
 
     grid.polyData[[1]]<-list()
-    pdf(file.path( project.datadirectory("offshoreclams"), "figures",paste0(fn,p$bank,"Effort.pdf")),width=wd,height=ht)
+    pdf(file.path( project.datadirectory("bio.surfclam"), "figures",paste0(fn,p$bank,"Effort.pdf")),width=wd,height=ht)
 
      
      for(y in 1:length(yrs)){
@@ -66,7 +66,7 @@ FisheryGridPlot <- function(fisheryList, p, boundPoly, vms=FALSE, fn='',cpue=TRU
     # CATCH
 
     grid.polyData[[2]]<-list()
-    pdf(file.path( project.datadirectory("offshoreclams"), "figures",paste0(fn,p$bank,"Catch.pdf")),width=wd,height=ht)
+    pdf(file.path( project.datadirectory("bio.surfclam"), "figures",paste0(fn,p$bank,"Catch.pdf")),width=wd,height=ht)
      
      for(y in 1:length(yrs)){
      
@@ -100,7 +100,7 @@ FisheryGridPlot <- function(fisheryList, p, boundPoly, vms=FALSE, fn='',cpue=TRU
     grid.polyData[[3]]<-list()
     cpuegrids = catchgrids
 
-    pdf(file.path( project.datadirectory("offshoreclams"), "figures",paste0(fn,p$bank,"CPUE.pdf")),width=wd,height=ht)
+    pdf(file.path( project.datadirectory("bio.surfclam"), "figures",paste0(fn,p$bank,"CPUE.pdf")),width=wd,height=ht)
      
      for(y in which(!unlist(lapply(effortgrids,is.null)))){
       print(paste(y,Sys.time()))
@@ -134,7 +134,7 @@ FisheryGridPlot <- function(fisheryList, p, boundPoly, vms=FALSE, fn='',cpue=TRU
 
 
   # EXPLOITATION
-    pdf(file.path( project.datadirectory("offshoreclams"), "figures",paste0(fn,p$bank,"Exploitation.pdf")),width=wd,height=ht)
+    pdf(file.path( project.datadirectory("bio.surfclam"), "figures",paste0(fn,p$bank,"Exploitation.pdf")),width=wd,height=ht)
      
      for(y in which(!unlist(lapply(effortgrids,is.null)))){
  
@@ -156,7 +156,7 @@ FisheryGridPlot <- function(fisheryList, p, boundPoly, vms=FALSE, fn='',cpue=TRU
     # RECORD DENSITY
 
     grid.polyData[[4]]<-list()
-    pdf(file.path( project.datadirectory("offshoreclams"), "figures",paste0(fn,p$bank,"Records.pdf")),width=wd,height=ht)
+    pdf(file.path( project.datadirectory("bio.surfclam"), "figures",paste0(fn,p$bank,"Records.pdf")),width=wd,height=ht)
 
      
      for(y in 1:length(yrs)){

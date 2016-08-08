@@ -21,7 +21,7 @@ SPMsetup = function(vmslogdata,grid.out,vmspoly,subpolys,yrs=2003:2015,effort.mi
   }
 
   # map of data points
-  pdf(file.path( project.datadirectory("offshoreclams"), "figures","SPMdatapoints.pdf"),11,8)
+  pdf(file.path( project.datadirectory("bio.surfclam"), "figures","SPMdatapoints.pdf"),11,8)
   ClamMap2("Ban")
   addPolys(subpolys,col=rgb(1,0,0,0.1),border=rgb(0,0,0,0.1))
   with(vmslogdata,points(X,Y,pch=16,cex=0.2,col=rgb(0,0,0,.1)))

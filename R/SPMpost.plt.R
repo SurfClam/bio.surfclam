@@ -1,5 +1,5 @@
 #' @export
-SPMpost.plt <- function(model.out, priors, vector.names, nr=4, nc=2, wd=8, ht=11, post.labs=NULL,name='', graphic='R',xl.type=1, path=file.path( project.datadirectory("offshoreclams"), "figures")){
+SPMpost.plt <- function(model.out, priors, vector.names, nr=4, nc=2, wd=8, ht=11, post.labs=NULL,name='', graphic='R',xl.type=1, path=file.path( project.datadirectory("bio.surfclam"), "figures")){
 
 	if(graphic=='pdf')pdf(file.path(path,paste0(name,"post_single.pdf")), width = wd, height = ht, pointsize = 16)
 	if(graphic=='R')x11(wd, ht)

@@ -21,10 +21,10 @@ GetLFData <- function(update=T){
    names(lf.data) <- tolower(names(lf.data))
    odbcClose(RODBCconn)
 
-    save(lf.data,file=file.path( project.datadirectory("offshoreclams"), "data", "LFdata.Rdata" ))
+    save(lf.data,file=file.path( project.datadirectory("bio.surfclam"), "data", "LFdata.Rdata" ))
   }
   else {
-  	load(file.path( project.datadirectory("offshoreclams"), "data", "LFdata.Rdata" ))
+  	load(file.path( project.datadirectory("bio.surfclam"), "data", "LFdata.Rdata" ))
     names(lf.data) <- tolower(names(lf.data))
 
   }

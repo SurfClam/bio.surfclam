@@ -1,5 +1,5 @@
 #' @export
-VMSgif<-function(fisheryList,yrs,interval=1,pause=0.05,tail=7,pie.scale=10,wd=800,ht=600,ptcex=0.1,ptcol=rgb(1,0,0,0.3),out.dir=file.path( project.datadirectory("offshoreclams"), "figures"),...){
+VMSgif<-function(fisheryList,yrs,interval=1,pause=0.05,tail=7,pie.scale=10,wd=800,ht=600,ptcex=0.1,ptcol=rgb(1,0,0,0.3),out.dir=file.path( project.datadirectory("bio.surfclam"), "figures"),...){
 	
 	require(animation)# for creating gif
 	require(TeachingDemos) # for adding pie charts to map

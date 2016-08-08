@@ -9,7 +9,7 @@ SPMRefpts = function(o,graphic="R",areas=1:5,nc=1,xmax=c(150000,30000,0.5),ymax=
 
 
 	if(graphic=='pdf'){
-		pdf(file.path( project.datadirectory("offshoreclams"),"figures",'SurfClamRefs.pdf'),height=ht,width=wd)
+		pdf(file.path( project.datadirectory("bio.surfclam"),"figures",'SurfClamRefs.pdf'),height=ht,width=wd)
 		par(mfrow=c(ceiling(length(areas)/nc),nc), mar = c(0, 3, 0, 1), omi = c(0.7, 0.3, 0.3, 0.3),las=1)
 	}
  	if(graphic=='R'){
