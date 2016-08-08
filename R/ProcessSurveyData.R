@@ -1,9 +1,9 @@
 #' @export
 ProcessSurveyData <- function(species=80983){
 
-  tows<-read.csv(  file.path(project.datadirectory("offshoreclams"),"data","Combined","Combined_Tow_dataMMM.csv"))
-  catch<-read.csv(  file.path(project.datadirectory("offshoreclams"),"data","Combined","Combined_Catch_dataMMM.csv"))
-  bycatch<-read.csv(  file.path(project.datadirectory("offshoreclams"),"data","Combined","Combined_ByCatch_DataMMM.csv"))
+  tows<-read.csv(  file.path(project.datadirectory("bio.surfclam"),"data","Combined","Combined_Tow_dataMMM.csv"))
+  catch<-read.csv(  file.path(project.datadirectory("bio.surfclam"),"data","Combined","Combined_Catch_dataMMM.csv"))
+  bycatch<-read.csv(  file.path(project.datadirectory("bio.surfclam"),"data","Combined","Combined_ByCatch_DataMMM.csv"))
   bycatch<-subset(bycatch,ITIS_CODE==species) #only surfclams
 
   catchtow<-merge(tows, catch, by=c("INDX"), all.x = T)
@@ -82,18 +82,18 @@ ProcessSurveyData <- function(species=80983){
   surveyData$stdcatch[surveyData$adjcatch==0] <- 0 
 
   
-write.csv(surveyData,   file.path(project.datadirectory("offshoreclams"),"R","SurveyData.csv"))
+write.csv(surveyData,   file.path(project.datadirectory("bio.surfclam"),"R","SurveyData.csv"))
 
 
   ##### Length - Frequency #####
 
-  lenfreqsamp<-read.csv(  file.path(project.datadirectory("offshoreclams"),"data","Combined","Combined_Freq_sample_dataPBH.csv"))
+  lenfreqsamp<-read.csv(  file.path(project.datadirectory("bio.surfclam"),"data","Combined","Combined_Freq_sample_dataPBH.csv"))
   lenfreqsamp<-subset(lenfreqsamp,Species.Code==species) #only surfclams
   names(lenfreqsamp)[4:5]<-c("N_measured","Wt_measured")
 
-  lenfreq.a<-read.csv(  file.path(project.datadirectory("offshoreclams"),"data","Combined","Len_freq_data_a.csv"))
-  lenfreq.b<-read.csv(  file.path(project.datadirectory("offshoreclams"),"data","Combined","Len_freq_data_b.csv"))
-  lenfreq.c<-read.csv(  file.path(project.datadirectory("offshoreclams"),"data","Combined","Len_freq_data_c.csv"))
+  lenfreq.a<-read.csv(  file.path(project.datadirectory("bio.surfclam"),"data","Combined","Len_freq_data_a.csv"))
+  lenfreq.b<-read.csv(  file.path(project.datadirectory("bio.surfclam"),"data","Combined","Len_freq_data_b.csv"))
+  lenfreq.c<-read.csv(  file.path(project.datadirectory("bio.surfclam"),"data","Combined","Len_freq_data_c.csv"))
 
   lenfreq <- rbind(lenfreq.a,lenfreq.b,lenfreq.c)
   lenfreq <- subset(lenfreq,Species==species) #only surfclams
@@ -101,7 +101,7 @@ write.csv(surveyData,   file.path(project.datadirectory("offshoreclams"),"R","Su
   lenfreqsamp$TowID = paste(lenfreqsamp$Survey,lenfreqsamp$Tow,sep='.')
   LenFreq <- merge(lenfreqsamp[,c("TowID","N_measured","Wt_measured")],lenfreq)
   
-  Morphs<-read.csv(  file.path(project.datadirectory("offshoreclams"),"data","Combined","Combined_Morphometrics_dataPBH.csv"))
+  Morphs<-read.csv(  file.path(project.datadirectory("bio.surfclam"),"data","Combined","Combined_Morphometrics_dataPBH.csv"))
   Morphs<-subset(Morphs,Species==species) #only surfclams
   Morphs$TowID = paste(Morphs$Survey,Morphs$Set,sep='.')
 

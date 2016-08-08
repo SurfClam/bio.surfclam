@@ -13,7 +13,7 @@
 ###############################################################################
 # To run in ecomod, run the following commands
 
-RLibrary("bio.surfclam","bio.lobster","bio.utilities","bio.spacetime")
+RLibrary("bio.surfclam","bio.utilities","SpatialHub")# Load required bio.packages
 
 RLibrary( "PBSmapping", "lubridate", "trip" ,"spatstat","TeachingDemos") # Load required packages
 
