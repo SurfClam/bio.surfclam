@@ -1,0 +1,698 @@
+---
+title: Kejimkujik National Park and interior Nova Scotia blanding's turtle (_Emydoidea blandingii_) population monitoring evaluation 
+author: "Drs. Ryan RE Stanley and Trevor S Avery"
+date: "March 2016"
+output:
+  pdf_document:
+    fig_caption: yes
+    toc: yes
+    toc_depth: 3
+  html_document:
+    toc: yes
+    toc_depth: 3
+---
+
+#McGowan's Lake
+## Analysis description
+
+Survey data from McGowan Lake was estimate the average return on sampling effort. We used two indices of visual survey effort for this exercise: 1) elapsed monitoring time·# of observers^-1^, and 2) the total number of hours spent monitoring ('observational hours') - # of observers * elapsed time sampling. In addition, we used trap survey data to evaluate the utility of trap deployment, aggregated by trap night, for monitoring turtle populations.
+
+We used resampling simulations for each unit of effort (visual and trap surveys) to evaluate variability in our estimates of return on effort (Catch per unit effort: CPUE). For each unit of effort the estimated range of CPUE was based on 1000 simulated sampling surveys drawn from observations among visual and trap survey years (1996-2015 and 2005-2015 for visual and trap surveys, respectively). 
+
+In our analyses we made several assumptions. First we only used counts of late juvenile and adult turtles (19+ years) and we assume that all turtles within this age range were available during all sampling events. These assumptions can be modified, but for now they offered a pragmatic first step given the relatively small dataset available for McGowan's lake. 
+
+## Visual surveys (1996-2015)
+
+We show that when observers are sampling for over two hours there is a large jump in the likelihood they will observe more turtles (Figure 1). Similarly, we show that sampling events of over 6 hours shows a higher likelihood that more turtles will be observed (Figure 2). Extending this analysis, we calculated the number of unique turtles observed in each year respective to the sampling effort.  Year after year it appeared that the number of turtles observed asymptoted at ~23 unique turtles. This observation was only made when sampling effort exceeded 100 people hours (Figures 2-5). 
+
+Next we combined the sampling effort among all years to see how the accumulated effort year to year resulted in the detection of unique turtle IDs. We ran a segmented regression to identify the breakpoint where the return on sampling effort begins to plateau. We show that after 100 observational hours (2006-2007) the observation of new turtles begins to plateau adding only a few turtles' year to year, presumably new recruits. This suggests that it could take up to 2.5 years to observe the majority of adults in the population based on the average sampling effort of ~75 observational hours (Figure 6).  We estimate that it would take ~880 observational hours to observe all 52 unique turtles of the specified age range in the population. This could represent approximately a decade of sampling based on the average observational period from 1996-2014 (Figure 7). However, this result does not take into account the fact that new turtles are emigrating into the population and were therefore not available for sampling in years previous. 
+
+## Trap surveys (2005-2015)
+
+We show that the there is a positive correlation between the number of traps set and the number of unique turtles censused (Figure 8). Similarly, the longer the trap set the increased likelihood more turtles will be observed (Figure 9). Overall, 0.17 (sd: 0.52) turtles were captured on average per trap night ranging 0.03 to 0.36 in 2007 and 2013 respectively (Figure 10). Since 2011 the number of turtles captured per night has remained relatively stable (Figures 10 and 11). West bog had the highest number of turtles on average per trap night (Figure 12), with the highest catch rates observed in the McGowan's Lake survey overall (CPUE=4; Figure 11). No turtles were captured in any sampling year in the Albany New and Mount Merrit Brook sampling areas (Figure 12).
+
+In total 64 unique adult turtles were captured in McGowan's Lake between 2005 and 2015. When the cumulative number of unique turtles are calculated from 2005 through 2015, aggregated sequentially by date, it can be demonstrated clearly that the number of traps deployed (as inferred by trap nights) scales positively with the number of unique turtles observed (Figure 13) agreeing with aggregate estimates (Figure 8). Only in 2015 did the trap survey appear to plateau (Figure 14). Data sampling suggests that only in sampling years where the number of trap nights exceed ~150 did the estimate of turtles within McGowan's Lake appear to plateau (Figure 14). Overall, turtles tend to be captured with higher efficiency in mid-summer (mid July to August; Figures 14 and 15). 
+
+## Summary
+
+This analysis presents a first look at the how sampling effort is related to population assessment. Currently the data within a given assessment year is insufficient to simulate the how changes in monitoring effort could influence the ability to accurately census and detect changes in the McGowan's Lake population. Currently, the analyses are based on the assumption that the turtles observed between 2005 and 2015 were equally available/probable to be sampled during each sampling year. This assumption does not account for the fact that new turtles emigrate to, and migrate from, the McGowan's Lake population. Estimates of population size, potentially varying per year, and integration of turtle age, and thus catchability, would be needed to build this work into a predictive modelling framework.
+
+
+```{r Visual_survey_analysis_and_plotting,include=FALSE}
+#load required libraries -------
+library(dplyr)
+library(boot)
+library(ggplot2)
+library(lubridate)
+library(segmented)
+
+#custom functions
+mround <- function(x,base){ 
+  base*ceiling(x/base) 
+} 
+
+## load data, change data formats and clean bugs
+tdata <- read.csv("c:/Users/rystanley/Documents/GitHub/TurtleSimulations/TurtleData.csv",header=T,sep=",")
+
+tdata$AgeAtCapture <- as.numeric(as.character(tdata$AgeAtCapture)) # convert from factor to character
+
+tdata <- tdata[-which(tdata$effort<0),] #remove and sampling efforts recorded as negative. 
+
+tdata$ymd <- ymd(paste(tdata$year,tdata$month,tdata$day,sep="-"))#convert date-time to POSIX for filtering
+tz(tdata$ymd) <- "" # remove timezone associated with the POSIX data
+
+
+#Data exploration ------------
+unique.turtles <- as.data.frame(tdata%>%group_by(year)%>%summarise(ut=length(unique(turtleid[!is.na(turtleid)])))%>%ungroup())
+unique.turtles$sampling <- as.vector(table(tdata$year)) # number of unique turtles each year
+
+p1 <- ggplot(unique.turtles,aes(x=sampling,y=ut))+geom_point()+
+  theme_bw()+stat_smooth(method="lm")+
+  labs(x="Number of observational events",y="Number of unique turtles");p1
+
+
+tdata$event <- paste(as.character(tdata$effortid),tdata$section,tdata$timestart,sep="_") # tag for a sampling event
+
+# summarize the data for the number of turtles observed in a given sampling event. Note that no observations
+# are considered NA
+
+simulationdata <- as.data.frame(tdata%>%group_by(event)%>%summarise(effort=unique(effort),numturtles=sum(!is.na(turtleid)))%>%ungroup())
+
+simulationdata$bin <- as.character(cut(simulationdata$effort,c(seq(0,180,20),max(simulationdata$effort)),right=T)) #10 mintues
+simulationdata$samp <- apply(simulationdata,1,FUN = function(x){as.numeric(gsub("]","",unlist(strsplit(x[4],","))[2]))})
+simulationdata[which(simulationdata$samp==max(simulationdata$samp)),"samp"] <- "180+" #change to 3+ hour label
+simulationdata$samp <- factor(simulationdata$samp,levels=c(seq(20,180,20),"180+")) #set the order
+
+#number of observations to bootstrap from the sampling effort groupings
+nsamp <- c(5,10,15,20,25,30)
+
+rdata <- NULL # takes ~ 2.5 mintues
+for(i in 1:1000){ # number of randomizations
+  for (j in nsamp){ # sampling levels
+    
+    resamp <- as.data.frame(simulationdata %>% group_by(samp) %>% sample_n(.,j,replace=TRUE) 
+                            %>% summarise(numturtles=mean(numturtles,na.rm=T)))[,2]
+    
+    temp <- data.frame(n=j,resamp=resamp)
+    rdata <- rbind(rdata,temp)
+  }
+}
+
+# create a dataframe with the resampling estimates (mean number of turtles among each of the resampling levels)
+simdata <- data.frame(effort=rep(c(seq(20,180,20),"180+"),1000*length(nsamp)),nsamp=rdata$n,meanturtles=rdata$resamp)
+
+# Derive summary statistics from the resampling events 
+ave.numturtles <- as.data.frame(simdata%>%group_by(effort,nsamp)%>%
+                                  summarise(mean=mean(meanturtles),sd=sd(meanturtles))%>%
+                                  ungroup())
+#set factor levels for plotting
+simdata$effort <- factor(simdata$effort,levels=c(seq(20,180,20),"180+"))
+ave.numturtles$effort <- factor(ave.numturtles$effort,levels=c(seq(20,180,20),"180+"))
+
+## Facet plot of all the resampling levels
+p2 <- ggplot(simdata,aes(x=effort,y=meanturtles))+geom_boxplot()+theme_bw()+
+  labs(x=expression(paste("Sampling effort (minutes . # ",observers^-1,")",sep="")),y="# of turtles")+facet_wrap(~nsamp,nrow=3);p2
+
+p3 <- ggplot(ave.numturtles,aes(x=effort,y=mean,group=1))+geom_point()+geom_errorbar(aes(ymin=mean-sd,ymax=mean+sd))+
+  geom_line()+theme_bw()+labs(x=expression(paste("Sampling effort (minutes . # ",observers^-1,")",sep="")),y="Mean # of turtles ± sd")+facet_wrap(~nsamp,nrow=3);p3
+
+## we can see that regardless of the resampling level the resutls are similar in that
+## sampling approaching an effort (number of minutes of sampling / number of observers) peaks ~ 140. Only
+## the error changes. 
+
+p4 <- ggplot(filter(simdata,nsamp==20),aes(x=effort,y=meanturtles))+geom_boxplot()+theme_bw()+
+  labs(x=expression(paste("Sampling effort (minutes . # ",observers^-1,")",sep="")),y="Number of turtles");p4
+
+p5 <- ggplot(filter(ave.numturtles,nsamp==20),aes(x=effort,y=mean,group=1))+geom_point()+
+  geom_errorbar(aes(ymin=mean-sd,ymax=mean+sd),width=0.2)+geom_line()+theme_bw()+
+  labs(x=expression(paste("Sampling effort (minutes . # ",observers^-1,")",sep="")),
+       y="Mean # of turtles ± sd");p5
+
+## Now the sampling effort is a difficult metric to interpret. Instead we will re-run the simulation with sampling mintues which is the
+        ## composite of the effort * # of observers. 
+        
+        simulationdata2 <- as.data.frame(tdata%>%group_by(event)%>%summarise(effort=unique(effort),
+                                                                             observers=unique(observers),
+                                                                             numturtles=sum(!is.na(turtleid)))%>%ungroup())
+        
+        simulationdata2$teffort <- simulationdata2$effort #* simulationdata2$observers * simulationdata2$observers #minutes sampled
+        
+        simulationdata2$bin <- as.character(cut(simulationdata2$teffort,c(seq(0,600,90),max(simulationdata2$teffort)),right=T)) #10 mintues
+        simulationdata2$samp <- apply(simulationdata2,1,FUN = function(x){as.numeric(gsub("]","",unlist(strsplit(x[6],","))[2]))})
+        simulationdata2[which(simulationdata2$samp==max(simulationdata2$samp)),"samp"] <- "600+" #change to 3+ hour label
+        simulationdata2$samp <- factor(simulationdata2$samp,levels=c(seq(90,600,90),"600+")) #set the order
+        
+        #number of observations to bootstrap from the sampling effort groupings
+        nsamp <- c(5,10,15)
+        
+        rdata <- NULL # takes ~ 2.5 mintues
+        for(i in 1:1000){ # number of randomizations
+          for (j in nsamp){ # sampling levels
+            
+            resamp <- as.data.frame(simulationdata2 %>% group_by(samp) %>% sample_n(.,j,replace=TRUE) 
+                                    %>% summarise(numturtles=mean(numturtles,na.rm=T)))[,2]
+            
+            temp <- data.frame(n=j,resamp=resamp)
+            rdata <- rbind(rdata,temp)
+          }
+        }
+        
+        # create a dataframe with the resampling estimates (mean number of turtles among each of the resampling levels)
+simdata2 <- data.frame(effort=rep(c(seq(90,600,90),"600+"),1000*length(nsamp)),nsamp=rdata$n,meanturtles=rdata$resamp)
+
+# Derive summary statistics from the resampling events 
+ave.numturtles2 <- as.data.frame(simdata2%>%group_by(effort,nsamp)%>%
+                                   summarise(mean=mean(meanturtles),sd=sd(meanturtles))%>%
+                                   ungroup())
+#set factor levels for plotting
+simdata2$effort <- factor(simdata2$effort,levels=c(seq(90,600,90),"600+"))
+ave.numturtles2$effort <- factor(ave.numturtles2$effort,levels=c(seq(90,600,90),"600+"))
+
+## Facet plot of all the resampling levels
+p6 <- ggplot(simdata2,aes(x=effort,y=meanturtles))+geom_boxplot()+theme_bw()+
+  labs(x="Sampling effort (total people minutes)",y="Number of turtles")+
+  facet_wrap(~nsamp,nrow=3);p6
+
+p7 <- ggplot(ave.numturtles2,aes(x=effort,y=mean,group=1))+geom_point()+geom_errorbar(aes(ymin=mean-sd,ymax=mean+sd))+
+  geom_line()+theme_bw()+labs(x="Sampling effort (total people minutes)",y="Mean # of turtles ± sd")+
+  facet_wrap(~nsamp,nrow=3);p7
+
+## we can see that regardless of the resampling level the resutls are similar in that
+## sampling approaching an effort (number people minutes sampling) peaks ~ 450 minutes . Only
+## the error changes. 
+
+p8 <- ggplot(filter(simdata2,nsamp==10),aes(x=effort,y=meanturtles))+geom_boxplot()+theme_bw()+
+  labs(x="Sampling effort (total observational minutes)",y="Number of turtles");p8
+
+p9 <- ggplot(filter(ave.numturtles2,nsamp==10),aes(x=effort,y=mean,group=1))+
+  geom_point()+geom_errorbar(aes(ymin=mean-sd,ymax=mean+sd),width=0.2)+
+  geom_line()+theme_bw()+labs(x="Sampling effort (total observational minutes)",y="Mean # of turtles ± sd");p9
+
+#we want 19+ yr old turtles so we can use all with some degree of reason given time sampled 1996-2015
+temp <- tdata[-which(tdata$AgeAtCapture==""),]
+#percent we are tossing out
+print(paste0("~",round(length(which(temp$AgeAtCapture %in% as.character(c(1:18))))/nrow(temp)*100),
+             "% data not used (< 19 yr old turtles)"))
+
+#subset the data for turtles younger than 19 years old. Here we assume that turtles which have no age identified
+#are older than the age of cutoff (19yrs). 
+turtle.data <- tdata[-which(tdata$AgeAtCapture %in% as.character(c(1:18))),] 
+number.unique <- length(unique(turtle.data$turtleid))-1# number of unique turtles obseved over the monitoring data period
+
+print(paste0(number.unique," turtles (19+ yrs old) observed between ",min(tdata$year)," & ",max(tdata$year)))
+
+#unique sample event
+turtle.data$event <- paste(as.character(turtle.data$effortid),turtle.data$section,turtle.data$timestart,sep="_")
+
+#order data sequntially through time
+turtle.data <- turtle.data[order(turtle.data$ymd),]
+
+#total effort in people minutes
+turtle.data$teffort <- turtle.data$effort#*turtle.data$observers*turtle.data$observers
+
+# index of the sampling years with data available
+years <- unique(turtle.data$year)
+
+# calculate the return on sampling investment. How many more turtles are observed as a function of time 
+# spent monitoring (total ppl mintues) ** for each year
+
+df=NULL # total dataframe shell
+for(i in years){
+  temp <- filter(turtle.data,year==i)
+  events <- unique(temp$event)  
+  
+  unique.turtles <- NA # starting a vector for the new turtles in a given year (i)
+  effort.log <- NULL # growing log of effort for each sequential sample event within a year (i)
+  
+  
+  for(j in events){
+    temp2 <- subset(temp,event==j)
+    unique.turtles <- c(unique.turtles,temp2$turtleid) #vector of turtles
+    unique.turtles <- unique.turtles[!duplicated(unique.turtles)] # get rid of duplicated incase of recapture
+    effort.log <- sum(c(effort.log,sum(temp2$teffort))) # total cumulative effort
+    new.turtles <- temp2$turtleid[is.element(temp2$turtleid,unique.turtles)] # the new turtles added
+    
+    out <- data.frame(year=i,event=j,ymd=temp2$ymd[1],effort=sum(temp2$teffort),cum_effort=effort.log,
+                      total_turtles=sum(!is.na(unique.turtles)),
+                      new_turtles=sum(!is.na(new.turtles)))
+    df <- rbind(df,out)
+    
+  }
+}
+
+
+#Find the cumulative effort utilized for each year
+Effort <- NULL
+for (i in unique(df$year)){
+  tempdat <- subset(df,year==i)
+  cumEffort <- data.frame(year=i,cum_effort=tempdat[nrow(tempdat),"cum_effort"])
+  Effort <- rbind(Effort,cumEffort)
+}
+
+# Number of new turtles as a function of effort 
+p10a <- ggplot(df,aes(x=cum_effort/60,y=total_turtles))+geom_point()+
+  theme_bw()+theme(legend.position="none")+
+  stat_smooth()+geom_hline(aes(yintercept=number.unique),lty=2)+
+  labs(x="Cumulative sampling effort (observational hours)",y="Number of unique turtle observations")+
+  scale_y_continuous(limits=c(0,mround(number.unique,5)),
+                     breaks=c(seq(0,round(number.unique/10)*10,5),number.unique,mround(number.unique,5)),
+                     labels=c(seq(0,round(number.unique/10)*10,5),number.unique,mround(number.unique,5)));p10a
+
+#2015 was an anomlous year with the most effort sustained over the longest period and this scews the results
+p10b <- ggplot(filter(df,year!=2015),aes(x=cum_effort/60,y=total_turtles))+geom_point()+
+  theme_bw()+theme(legend.position="none")+
+  stat_smooth()+geom_hline(aes(yintercept=number.unique),lty=2)+
+  labs(x="Cumulative sampling effort (observational hours)",y="Number of unique turtle observations")+
+  scale_y_continuous(limits=c(0,mround(number.unique,5)),
+                     breaks=c(seq(0,round(number.unique/10)*10,5),number.unique,mround(number.unique,5)),
+                     labels=c(seq(0,round(number.unique/10)*10,5),number.unique,mround(number.unique,5)));p10b
+
+#wrapped for each year
+p11a <-  ggplot(df,aes(x=cum_effort/60,y=total_turtles))+geom_point()+theme_bw()+theme(legend.position="none")+
+  stat_smooth(span=600)+facet_wrap(~year,nrow=10)+scale_y_continuous(limits=c(0,30))+
+  labs(x="Cumulative sampling effort (observational hours)",y="Number of unique turtle observations");p11a
+
+p11b <- ggplot(filter(df,year!=2015),aes(x=cum_effort,y=total_turtles))+geom_point()+theme_bw()+theme(legend.position="none")+
+  stat_smooth(span=600)+facet_wrap(~year,nrow=10)+scale_y_continuous(limits=c(0,30))+
+  labs(x="Cumulative sampling effort (observational hours)",y="Number of unique turtle observations");p11b
+events <- unique(turtle.data$event)  
+
+unique.turtles <- NA # starting a vector for the new turtles in a given year (i)
+effort.log <- NULL # growing log of effort for each sequential sample event within a year (i)
+df2=NULL
+
+for(j in events){
+  temp2 <- subset(turtle.data,event==j)
+  unique.turtles <- c(unique.turtles,temp2$turtleid) #vector of turtles
+  unique.turtles <- unique.turtles[!duplicated(unique.turtles)] # get rid of duplicated incase of recapture
+  effort.log <- sum(c(effort.log,sum(temp2$teffort))) # total cumulative effort
+  new.turtles <- temp2$turtleid[is.element(temp2$turtleid,unique.turtles)] # the new turtles added
+  
+  out <- data.frame(event=j,ymd=temp2$ymd[1],effort=sum(temp2$teffort),cum_effort=effort.log,
+                    total_turtles=sum(!is.na(unique.turtles)),
+                    new_turtles=sum(!is.na(new.turtles)))
+  df2=rbind(df2,out)
+  
+}
+
+#add year data
+df2$year=year(df2$ymd)
+
+df2$cum_effort <- df2$cum_effort/60 # convert to hours 
+
+#fit the plot of effort to observe new turtles among all years
+#fit a segmented regression model to show the relationship and inflection point
+fit=lm(total_turtles~cum_effort,df2)
+segmented.mod=segmented(fit,seg.Z=~cum_effort,psi=100)
+inflectionpoint <- as.numeric(segmented.mod$psi.history[5])
+
+#data from segmented model for plotting
+dat2 <- data.frame(cum_effort=df2$cum_effort,total_turtles=broken.line(segmented.mod)$fit)
+
+
+#Find the cumulative effort utilized for each year
+cEffort <- NULL
+for (i in unique(df2$year)){
+  tempdat <- subset(df2,year==i)
+  cumEffort <- data.frame(year=i,cum_effort=tempdat[nrow(tempdat),"cum_effort"])
+  cEffort <- rbind(cEffort,cumEffort)
+}        
+
+
+## this is repetitive because of an update to ggplot which for some reason will not 
+# let me use multiple geom_vlines. I also failed at doing this in a loop.
+p12fitted <- ggplot(df2,aes(x=cum_effort,y=total_turtles))+theme_bw()+
+  geom_vline(aes(xintercept=cEffort[which(cEffort$year == 1996),"cum_effort"]),
+             lty=2,col="grey50",lwd=0.5)+
+  annotate("text",y=rep(40,5),
+           x=cEffort[which(cEffort$year == 1996),"cum_effort"],
+           label="1996",angle=90)+
+  geom_vline(aes(xintercept=cEffort[which(cEffort$year == 2002),"cum_effort"]),
+             lty=2,col="grey50",lwd=0.5)+
+  annotate("text",y=rep(40,5),
+           x=cEffort[which(cEffort$year == 2002),"cum_effort"],
+           label="2002",angle=90)+
+  geom_vline(aes(xintercept=cEffort[which(cEffort$year == 2008),"cum_effort"]),
+             lty=2,col="grey50",lwd=0.5)+
+  annotate("text",y=rep(40,5),
+           x=cEffort[which(cEffort$year == 2008),"cum_effort"],
+           label="2008",angle=90)+
+  geom_vline(aes(xintercept=cEffort[which(cEffort$year == 2012),"cum_effort"]),
+             lty=2,col="grey50",lwd=0.5)+
+  annotate("text",y=rep(40,5),
+           x=cEffort[which(cEffort$year == 2012),"cum_effort"],
+           label="2012",angle=90)+
+  geom_vline(aes(xintercept=cEffort[which(cEffort$year == 2015),"cum_effort"]),
+             lty=2,col="grey50",lwd=0.5)+
+  annotate("text",y=rep(40,5),
+           x=cEffort[which(cEffort$year == 2015),"cum_effort"],
+           label="2015",angle=90)+
+  geom_point(size=3)+
+  geom_hline(aes(yintercept=number.unique),lty=2)+
+  geom_segment(aes(x=inflectionpoint,xend=inflectionpoint,
+                   y=dat2[which.min(abs(dat2$cum_effort - inflectionpoint)),"total_turtles"],yend=0),lty=1)+
+  geom_line(data=dat2,lwd=1.13,col="grey50")+
+  labs(y="Number of turtles",x="Sampling effort (observational hours)")+
+  scale_y_continuous(limits=c(0,mround(number.unique,5)),
+                     breaks=c(seq(0,round(number.unique/10)*10,5),number.unique,mround(number.unique,5)),
+                     labels=c(seq(0,round(number.unique/10)*10,5),number.unique,mround(number.unique,5)),
+                     expand = c(0,0))+
+  scale_x_continuous(breaks=c(0,inflectionpoint,250,500,750,1000),
+                     labels=c(0,round(inflectionpoint),250,500,750,1000));p12fitted
+
+
+p13 <- ggplot(df2,aes(x=cum_effort,y=total_turtles))+
+  geom_vline(aes(xintercept=cEffort[which(cEffort$year == 1996),"cum_effort"]),
+             lty=2,col="grey50",lwd=0.5)+
+  annotate("text",y=rep(5,6),
+           x=cEffort[which(cEffort$year == 1996),"cum_effort"],
+           label="1996",angle=90)+
+  geom_vline(aes(xintercept=cEffort[which(cEffort$year == 2000),"cum_effort"]),
+             lty=2,col="grey50",lwd=0.5)+
+  annotate("text",y=rep(5,6),
+           x=cEffort[which(cEffort$year == 2000),"cum_effort"],
+           label="2000",angle=90)+
+  geom_vline(aes(xintercept=cEffort[which(cEffort$year == 2004),"cum_effort"]),
+             lty=2,col="grey50",lwd=0.5)+
+  annotate("text",y=rep(5,6),
+           x=cEffort[which(cEffort$year == 2004),"cum_effort"],
+           label="2004",angle=90)+
+  geom_vline(aes(xintercept=cEffort[which(cEffort$year == 2008),"cum_effort"]),
+             lty=2,col="grey50",lwd=0.5)+
+  annotate("text",y=rep(5,6),
+           x=cEffort[which(cEffort$year == 2008),"cum_effort"],
+           label="2008",angle=90)+
+  geom_vline(aes(xintercept=cEffort[which(cEffort$year == 2014),"cum_effort"]),
+             lty=2,col="grey50",lwd=0.5)+
+  annotate("text",y=rep(5,6),
+           x=cEffort[which(cEffort$year == 2012),"cum_effort"],
+           label="2012",angle=90)+
+  geom_point()+theme_bw()+theme(legend.position="none")+
+  #stat_smooth(span=0.65)+
+  geom_hline(aes(yintercept=number.unique),lty=1,lwd=1)+
+  scale_x_log10(breaks=c(10,100,round(df2[which(df2$total_turtles==number.unique)[1],"cum_effort"])),
+                labels=c(10,100,round(df2[which(df2$total_turtles==number.unique)[1],"cum_effort"])))+
+  annotation_logticks(sides="b")+labs(y="Number of turtles",x="Sampling effort (observational hours)")+
+  geom_segment(aes(x=df2[which(df2$total_turtles==number.unique)[1],"cum_effort"],
+                   xend=df2[which(df2$total_turtles==number.unique)[1],"cum_effort"],
+                   y=number.unique,yend=0),lty=1,lwd=1)+
+  scale_y_continuous(limits=c(0,mround(number.unique,5)),
+                     breaks=c(seq(0,round(number.unique/10)*10,5),number.unique,mround(number.unique,5)),
+                     labels=c(seq(0,round(number.unique/10)*10,5),number.unique,mround(number.unique,5)),
+                     expand = c(0,0));p13
+
+        
+
+#Plotting variables for pdf   
+grDevices::pdf.options(useDingbats = TRUE) # for file compressionor file compression
+
+```
+\newpage
+
+#Results
+## Visual survey
+```{r Turtles_vs_time,echo=FALSE,warning=FALSE,results='asis',message=FALSE,include=TRUE,fig.cap="Number of Blanding's turtles(_Emydoidea blandingii_) observed as a function of sampling effort (total time . number of observers^-1). Data derived from 1000 simulated sampling events based on observations between 1995 and 2015"}
+print(p4)
+```
+
+```{r Turtles_vs_time2,echo=FALSE,warning=FALSE,results='asis',message=FALSE,include=TRUE,fig.cap="Number of Blanding's turtles (_Emydoidea blandingii_) observed as a function of sampling effort (total # of people minutes). Data derived from 1000 simulated sampling events based on observations between 1995 and 2015"}
+print(p8)
+```
+
+```{r Turtles_vs_time_withinYear,echo=FALSE,warning=FALSE,results='asis',message=FALSE,include=TRUE,fig.cap="Number of unique turtles versus the total cumulative sample time within each sample year (1996:2014). Dashed line represents the total number of unique turtles observed throughout the sampling period (1996:2015). Note effort is cumulative in chronological order from the beginning of monitoring in 1996. 2015 excluded because of extended sampling season."}
+print(p10a)
+```
+
+```{r Turtles_vs_time_withinYear_2015,echo=FALSE,warning=FALSE,results='asis',message=FALSE,include=TRUE,fig.cap="Number of unique turtles versus the total cumulative sample time within each sample year (1996:2015). Dashed line represents the total number of unique turtles observed throughout the sampling period. Note effort is cumulative in chronological order from the beginning of monitoring in 1996."}
+print(p10b)
+```
+
+```{r Turtles_vs_time_amongYears,echo=FALSE,fig.height=7,warning=FALSE,results='asis',message=FALSE,include=TRUE,fig.cap="Number of unique turtles versus the total cumulative sample time within each sampling year (1996:2015).",}
+print(p11a)
+```
+
+```{r CumulativeSampleEffort_vs_time,echo=FALSE,warning=FALSE,results='asis',message=FALSE,include=TRUE,fig.cap="Number of unique turtle captures versus sampling effort (total people hours) for each sample event. Horizontal dashed line represents the total number of unique turtles observed in McGowan's lake. Vertical solid line represents the point of inflection as estimated by a segmented regression analysis (grey line). Dashed grey vertical lines represent the cumulative sampling effort on the respective year.   Note effort is cumulative in chronological order from the beginning of monitoring in 1996."}
+print(p12fitted)
+```
+
+```{r Number_turtles_logeffort,echo=FALSE,warning=FALSE,results='asis',message=FALSE,include=TRUE,fig.cap="Number of unique turtle captures vs. sampling effort (total people hours) for each sample event. Vertical solid line represents the point where all turtles have been observed (n=52; horizontal solid line). Dashed grey vertical lines represent the cumulative sampling effort on the respective year. Note effort is cumulative in chronological order from the beginning of monitoring in 1996. "}
+print(p13)
+```
+
+
+```{r Trap_survey_analysis_and_plotting,include=FALSE}
+## load data, change data formats and clean bugs
+      tdata <- read.csv("TrapData.csv",header=T,sep=",")
+      
+      #note all the 20+ ages were just listed as 40 here. 
+      tdata$AgeAtCapture <- as.numeric(as.character(tdata$AgeAtCapture)) # convert from factor to character
+      tdata$ymd <- ymd(paste(tdata$year,tdata$month,tdata$day,sep="-"))#convert date-time to POSIX for filtering
+      tz(tdata$ymd) <- "" # remove timezone associated with the POSIX data
+
+      #filter out the trap whcih was left out for a year
+      tdata <- filter(tdata,DaysSinceSet<100)
+      #filter out the times where a trap was collected on the same day
+      tdata <- filter(tdata,DaysSinceSet>0)
+
+#Data exploration ------------
+      unique.samps<- as.data.frame(tdata%>%group_by(year)%>%summarise(ut=length(unique(turtleid[!is.na(turtleid)])),
+                                                                         utraps=length(unique(trapid)))%>%ungroup())
+     
+      
+      P1 <- ggplot(unique.samps,aes(x=utraps,y=ut))+geom_point()+
+        theme_bw()+stat_smooth(method="lm",lty=2,se=FALSE)+
+        labs(x="Numbers of traps set",y="Number of unique turtles")
+      
+## average return per trap. This does not account for other traps 
+      
+      trapids <- unique(tdata$trapid)
+      
+      #total number of turtles captured cumulatively after x days for each day
+      simulationdata=NULL
+      for (i in trapids){
+        temp <- filter(tdata,trapid==i)
+        temp <- temp[order(temp$ymd),]
+        
+        temp3=NULL
+        for (j in 1:length(unique(temp$ymd))){
+          tempall <- filter(temp,ymd %in% unique(temp$ymd)[1:j]) # all days prior to j (in case of recpatures)
+          temp2 <- filter(temp,ymd==unique(temp$ymd)[j])
+          count <- sum(!is.na(tempall$turtleid))
+          out <- data.frame(trapid=as.character(i),ymd=unique(temp$ymd)[j],
+                            trapdays=unique(temp2$DaysSinceSet),uniquecount=count)
+          temp3 <- rbind(temp3,out)
+        }
+        simulationdata <- rbind(simulationdata,temp3)
+      }
+
+      #total number of turtles captured cumulatively after x days for each day
+      simulationdata2=NULL
+      for (i in trapids){
+        temp <- filter(tdata,trapid==i)
+        temp <- temp[order(temp$ymd),]
+        
+        temp3=NULL
+        for (j in 1:length(unique(temp$ymd))){
+          #tempall <- filter(temp,ymd %in% unique(temp$ymd)[1:j]) # all days prior to j (in case of recpatures)
+          temp2 <- filter(temp,ymd==unique(temp$ymd)[j])
+          count <- sum(!is.na(temp2$turtleid))
+          out <- data.frame(trapid=as.character(i),ymd=unique(temp$ymd)[j],
+                            trapdays=unique(temp2$DaysSinceSet),uniquecount=count)
+          temp3 <- rbind(temp3,out)
+        }
+        simulationdata2 <- rbind(simulationdata2,temp3)
+      }
+        
+### cumulative number of unique turtles for a given trap
+      nsamp <- c(3,6,9,12)
+      
+      rdata <- NULL # takes ~ 2.5 mintues
+        for(i in 1:1000){ # number of randomizations
+          for (j in nsamp){ # sampling levels
+        
+          resamp <- as.data.frame(simulationdata %>% group_by(trapdays) %>% sample_n(.,j,replace=TRUE) 
+                                %>% summarise(numturtles=mean(uniquecount,na.rm=T)))
+        
+            temp <- data.frame(n=j,days=resamp[,1],resamp=resamp[,2])
+            rdata <- rbind(rdata,temp)
+          }
+        }
+      
+      
+  P2 <- ggplot(rdata,aes(x=factor(days),y=resamp))+geom_boxplot()+facet_wrap(~n,nrow=3)+theme_bw()
+  P2a <- ggplot(filter(rdata,days<7),aes(x=factor(days),y=resamp))+geom_boxplot()+facet_wrap(~n,nrow=3)+theme_bw()
+  
+   P2b <- ggplot(filter(rdata,days<7,n==12),aes(x=factor(days),y=resamp))+
+    geom_boxplot()+theme_bw()+labs(x="Number of trap set nights",y="Number of unique turtle observations")
+  
+  
+  ## cumulative return on effort
+  timeddata <- tdata[order(tdata$ymd),]
+  timeddata$year <- year(timeddata$ymd)
+  
+  uniqueturtles <- NULL
+  trapnight <- 0 # night counter 
+  Output=NULL
+  for (i in unique(timeddata$trapid)){
+    temp <- filter(timeddata,trapid==i) #subset for the 'i^th' trap
+    daystart <- 0
+    for(j in unique(temp$ymd)){
+      temp2 <- filter(temp,ymd==j) # subset for a date for the 'i^th' trap
+      uniqueturtles <- c(uniqueturtles,unique(temp2$turtleid))# grows for each successive trap.
+      turtlenumber <- length(unique(temp2$turtleid)) # how many unique turtles
+      uturtle <- length(unique(c(temp2$turtleid,uniqueturtles)))
+      #if(length(unique(temp2$DaysSinceSet))>1){print(c(i,j))}
+      additionaldays <- unique(temp2$DaysSinceSet)-daystart
+      #if(length((additionaldays))>1){print(c(i,temp2$year,temp2$month,temp2$day))}
+      daystart <- temp2$DaysSinceSet #reset
+      trapnight <- trapnight+additionaldays
+      dat <- data.frame(trapid=i,time=unique(temp2$ymd),trapnight=trapnight,numturtles=turtlenumber,cumturtle=uturtle)
+      Output <- rbind(Output,dat)
+    }
+  }
+  
+  Output$year=year(Output$time) # add the labels for each year 
+  Output$firstyear="No label"
+  Output[which(!duplicated(Output$year)),"firstyear"]="label"
+  nyears <- length(unique(Output$year))
+  nturtles <- length(unique(tdata$turtleid))
+  
+  linedata=data.frame(cumturtle=as.vector(rep(8,nyears)),
+                      trapnight=(as.vector(filter(Output,firstyear=="label")%>%select(trapnight))+25),
+                      label=as.vector(filter(Output,firstyear=="label")%>%select(year)))
+  colnames(linedata) <- c("cumturtle","trapnight","label")
+  
+  P4 <- ggplot(Output,aes(x=trapnight,y=cumturtle))+
+    geom_point()+theme_bw()+
+    stat_smooth()+
+    geom_vline(data=filter(Output,firstyear=="label"),aes(xintercept=trapnight),lty=2)+
+   geom_text(data=linedata,aes(y=cumturtle,x=trapnight,label=label),angle=270)+
+    labs(x="Number of trap nights (sequential)",y="Cumulative number of unique observations")+
+    geom_hline(aes(yintercept=nturtles),lty=1)+
+    scale_y_continuous(breaks=c(seq(0,60,by = 20),nturtles),labels =c(seq(0,60,by = 20),nturtles))
+    
+    
+## cumulative trapping success within years 
+  
+ 
+Output2=NULL
+  for (y in unique(timeddata$year)){
+    uniqueturtles <- NULL # turtle counter
+    trapnight <- 0 # night counter 
+    for (i in unique(timeddata$trapid)){
+      temp <- filter(timeddata,trapid==i,year==y) #subset for the 'i^th' trap in each year
+      daystart <- 0
+      for(j in unique(temp$ymd)){
+        temp2 <- filter(temp,ymd==j) # subset for a date for the 'i^th' trap
+        uniqueturtles <- c(uniqueturtles,unique(temp2$turtleid))# grows for each successive trap.
+        turtlenumber <- length(unique(temp2$turtleid)) # how many unique turtles
+        uturtle <- length(unique(c(temp2$turtleid,uniqueturtles)))
+        #if(length(unique(temp2$DaysSinceSet))>1){print(c(i,j))}
+        additionaldays <- unique(temp2$DaysSinceSet)-daystart
+        #if(length((additionaldays))>1){print(c(i,temp2$year,temp2$month,temp2$day))}
+        daystart <- temp2$DaysSinceSet #reset
+        trapnight <- trapnight+additionaldays
+        dat <- data.frame(year=y,trapid=i,time=unique(temp2$ymd),trapnight=trapnight,numturtles=turtlenumber,cumturtle=uturtle)
+        Output2 <- rbind(Output2,dat)
+      }
+    }
+  } 
+
+  P5 <- ggplot(Output2,aes(x=trapnight,y=cumturtle))+
+    geom_point()+
+    stat_smooth()+
+    facet_wrap(~year,nrow=4,scales="free_y")+
+    theme_bw()+
+    labs(x="Number of trap nights (sequential)",y="Cumulative number of unique observations")
+  
+  tdata$ID <- paste(tdata$trapid,tdata$date,sep="_")
+
+Output3 <- as.data.frame(tdata%>%group_by(ID,area,year,month)%>%
+          summarise(value=length(unique(turtleid[!is.na(turtleid)])))%>%
+                                   ungroup(),stringsAsFactors=F)
+
+Output3$area=as.character(Output3$area)
+
+Output3[which(Output3$area=="DL (Deans Lake)"),"area"]="Dean's Lake"
+Output3[which(Output3$area=="EB (East Brook)"),"area"]="East Brook"
+Output3[which(Output3$area=="WB (West Bog)"),"area"]="West Bog"
+Output3[which(Output3$area=="JT (Joe Tom Brook)"),"area"]="Joe Tom Brook"
+Output3[which(Output3$area=="AN (Albany New)"),"area"]="Albany New"
+Output3[which(Output3$area=="MM (Mount Merrit Brook)"),"area"]="Mount Merrit Brook"
+
+Output3$area <- factor(Output3$area,levels=c("Dean's Lake","East Brook","West Bog","Joe Tom Brook","Albany New","Mount Merrit Brook"))
+
+P6 <- ggplot(Output3,aes(x=area,y=value))+geom_violin()+
+  facet_wrap(~area,nrow=2,scales = "free")+theme_bw()+
+  labs(x="Sample area",y="Number of turtles per trap night")+
+  theme(axis.text.x=element_blank(),axis.ticks.x=element_blank())
+
+P7 <- ggplot(Output3,aes(x=value))+geom_histogram()+
+  facet_grid(~year)+theme_bw()+labs(y="Frequency",x="Number of turtles per trap night")
+
+
+Output4 <- as.data.frame(Output3%>%group_by(year)%>%summarise(mean=mean(value,na.rm=T),
+                                                            se=sd(value,na.rm=T)/sqrt(sum(!is.na(value))),
+                                                            sd=sd(value,na.rm=T)),stringsAsFactors=F)
+
+P8 <- ggplot(Output4,aes(x=year,y=mean))+
+  geom_errorbar(aes(ymin=mean-se,ymax=mean+se),width=0.2)+
+  geom_point()+
+  theme_bw()+
+  scale_x_continuous(limits = c(2004,2016),breaks=seq(2005,2015,2),labels=seq(2005,2015,2))+
+  labs(x="Sample year",y=expression(paste("Number of turtles "%+-%" se",sep=" ")))
+
+
+Output3[which(Output3$month==6),"month"]="June"
+Output3[which(Output3$month==7),"month"]="July"
+Output3[which(Output3$month==8),"month"]="August"
+Output3$month <- factor(Output3$month,levels=c("June","July","August"))
+Output5 <- Output3
+Output5$year="All"
+Output5=rbind(Output3,Output5)
+Output5$year=factor(Output5$year,levels=c(unique(Output3$year)[order(unique(Output3$year))],"All"))
+
+
+P9 <-  ggplot(Output5,aes(x=factor(month),y=value))+geom_violin()+
+  facet_wrap(~year,nrow=3,scales="free_y")+theme_bw()+labs(x="Sample month",y="Number of turtles per trap night")
+  
+```
+\newpage
+
+##Trap survey
+```{r Turtles_vs_trapnum,echo=FALSE,warning=FALSE,results='asis',message=FALSE,include=TRUE,fig.cap="Number of unique Blanding's turtles(_Emydoidea blandingii_) observervations as a function of sampling effort (# traps*year^-1). Data derived from 1000 simulated sampling events based on observations between 1995 and 2015"}
+print(P1)
+```
+
+```{r Turtles_vs_trapsetdays,echo=FALSE,warning=FALSE,results='asis',message=FALSE,include=TRUE,fig.cap="Number of unique Blanding's turtles (_Emydoidea blandingii_) observervations as a function of the number of traps set. Data generated through 1000 simulations cumulative unique turtles per day and trap set among all yeears asampled (2005:2015)"}
+print(P2b)
+```
+
+```{r Mean CPUE_per_year,echo=FALSE,warning=FALSE,results='asis',message=FALSE,include=TRUE,fig.cap="Average CPUE as a function of the sample year within McGowan's Lake assessment area"}
+print(P8)
+```
+
+```{r Frequency_CPUE_year,echo=FALSE,warning=FALSE,results='asis',message=FALSE,include=TRUE,fig.cap="Frequency of turtle CPUE as a function of the sample year within McGowan's Lake assessment area"}
+print(P7)
+```
+
+```{r CPUE_per_trapsetnights_area,echo=FALSE,warning=FALSE,results='asis',message=FALSE,include=TRUE,fig.cap="Turtle CPUE as a function of sample area within McGowan's Lake.Data presented as a violin plot with the width of the polygon scaling with the relative density of the observed CPUE."}
+print(P6)
+```
+
+```{r CumulativeTurtles_vs_trapsetnights,echo=FALSE,warning=FALSE,results='asis',message=FALSE,include=TRUE,fig.cap="Cumulative number of unique Blanding's turtles (_Emydoidea blandingii_) observervations as a function of the number of trap nights. Dashed lines represent the start of sampling for each sample year and the solid horizontal line represents the total unique turtles observed over the entire monitoring period. Blue line fitted as loess regression"}
+print(P4)
+```
+
+```{r CumulativeTurtles_vs_trapsetnights_peryear,fig.height=7,echo=FALSE,warning=FALSE,results='asis',message=FALSE,include=TRUE,fig.cap="Cumulative number of unique Blanding's turtles (_Emydoidea blandingii_) observervations as a function of the number of trap nights within a year. Dashed lines represent the start of sampling for each sample year and the solid horizontal line represents the total unique turtles observed over the entire monitoring period. Blue lines fitted as loess regressions within each year"}
+print(P5)
+```
+
+```{r Frequency_CPUE_year_violin,echo=FALSE,warning=FALSE,results='asis',message=FALSE,include=TRUE,fig.cap="Turtle CPUE as a function of the sample year and month within McGowan's Lake assessment area. Data presented as a violin plot with the width of the polygon scaling with the relative density of the observed CPUE."}
+print(P9)
+```
+
+
+
+
+
