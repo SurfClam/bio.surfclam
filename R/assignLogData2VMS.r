@@ -14,7 +14,7 @@ assignLogData2VMS = function(fisheryList, p){
 
   logdata = logdata[,c("EID","X","Y","C","A","year","vmsdatelocal")]
 
-  save(logdata,file=file.path( project.datadirectory("offshoreclams"), "data", "VMSlogData.Rdata" ))
+  save(logdata,file=file.path( project.datadirectory("bio.surfclam"), "data", "VMSlogData.Rdata" ))
 
 
   return(logdata)
