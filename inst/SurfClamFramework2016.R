@@ -8,12 +8,17 @@
 ##  Brad Hubley
 ##  Susan Heaslip
 ##
+##  Artic Surf Clam Assessment Script
 ##
+##  April 2017
+##
+##  Brad Hubley
+##  Susan Heaslip
+##  Ryan Stanley
 ##
 ###############################################################################
-# To run in ecomod, run the following commands
 
-RLibrary("bio.surfclam","bio.utilities","SpatialHub")# Load required bio.packages
+RLibrary("bio.surfclam","bio.lobster","bio.utilities","bio.spacetime","bio.temperature","SpatialHub")
 
 RLibrary( "PBSmapping", "lubridate", "trip" ,"spatstat","TeachingDemos") # Load required packages
 
@@ -362,6 +367,10 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
     vmslogdata = assignLogData2VMS(fisheryList, p)
     vmslogdata = subset(vmslogdata,EID%in%findPolys(vmslogdata,Banq100, maxRows = 1e+06)$EID)
     VMSden.poly = vmsDensity(vmslogdata,sig=0.2,res=0.1,lvl=30)
+
+      load(file.path( project.datadirectory("bio.surfclam"),'data','VMSdensity.rdata'))
+      write.csv(VMSden.poly,file.path( project.datadirectory("bio.surfclam"),'data',"VMSpolygons.csv"))
+
    
     ClamMap2("Ban",isobath=seq(50,500,50),bathy.source='bathy')
     addPolys(CWzones)
@@ -607,7 +616,7 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
     refs=SPMRefpts(SPmodel1.out,col='grey', graphic='pdf')
 
     # phase plots
-    SPMPhaseplts(SPmodel1.out,ymax=2.2, graphic='pdf')
+    SPMPhaseplts(SPmodel1.out,ymax=2.2, graphic='R')
 
 
 
