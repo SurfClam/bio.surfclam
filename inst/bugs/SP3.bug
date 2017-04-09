@@ -1,0 +1,90 @@
+model
+{
+
+  # PRIORS
+  
+  # priors for each area j
+  logK ~ dnorm(logK.a, logK.b)
+  for(j in 1:NJ){
+    # priors for Carrying Capacity K 
+    #logK[j] ~ dnorm(logK.a[j], logK.b[j])
+    #K[j] <- exp(logK[j])
+    K[j] <- exp(logK)*H[j]
+    
+    # priors for Initial Biomass B0
+    logB0[j] ~ dnorm(logB0.a[j], logB0.b[j])
+    B0[j] <- exp(logB0[j])
+  }
+  
+    
+    
+  # priors for intrinsic rate of increase 
+  
+  # hyperprior on mean r 
+  #r.u ~ dunif(r.u.a,r.u.b)
+  # hyperprior on sd r 
+  #r.sd ~ dlnorm(r.sd.a,r.sd.b)
+  #r.sd ~ dunif(r.sd.a,r.sd.b)
+  #r.sd <- 5
+  
+  # convert mean and sd to hyperparameters for prior
+  #r.b<-pow(r.sd,-2)
+  #r.a<-log(r.u)
+  #r.b<-(pow(r.u,2)/r.u) # for gamma prior
+  #r.a<-pow(r.sd,2)/pow(r.b,2) # for gamma prior
+
+  # prior for r
+  for(j in 1:NJ){
+    r[j] ~ dlnorm(r.a, r.b)
+    #r[j] ~ dgamma(r.a, r.b) # gamma prior
+    #r[j] ~ dunif(r.a, r.b) # uniform prior
+  }
+  
+  # priors for catchabilities
+  #q ~ dbeta(q.a, q.b)
+  q ~ dbeta(q.a, q.b)T(0.2,1)
+  
+  # priors for error terms
+  
+  # prior for process errors
+  isigma2 ~ dgamma(isigma2.a, isigma2.b) # gamma prior on precision
+  sigma <- pow(isigma2, -0.5) #sd
+  #sigma ~ dunif(sigma.a, sigma.b) # uniform prior on SD
+  #isigma2 <- pow(sigma, -2)
+ 
+  # prior for measurement errors
+  # Commercial catch rate
+  #itau2 ~ dgamma(itau2.a, itau2.b) # gamma prior on precision
+  #tau <- pow(itau2, -0.5) #sd
+  tau ~ dunif(tau.a, tau.b) # uniform prior on SD
+  itau2 <- pow(tau, -2)
+  
+  for(j in 1:NJ){	
+  
+    # State equation - Biomass dynamics
+    Pmed[1,j] <-log(B0[j]/K[j])
+    P[1,j] ~ dlnorm(Pmed[1,j], isigma2) # initialize P (K scaled biomass)
+    
+    
+    for(t in 2:NY){	
+    
+      # Dynamics equation (Pmed is the log of the predicted scaled biomass from the biomass dynamics)
+      Pmed[t,j] <- log(max(P[t-1,j] + r * P[t-1,j] * (1 - P[t-1,j]) - C[t-1,j]/K[j], 0.0001))
+      
+      # Process equation (Pmed is fit to the 'actual' scaled biomass (P) using the estimated process error (sigma) expressed as a precision (isigma2))
+      P[t,j] ~ dlnorm(Pmed[t,j], isigma2) 
+    }
+    
+    
+    # Observation equations - fitting to abundance indices
+    
+    for(t in 1:NY){
+      # Commercial catch rate
+      Omed[t,j] <- log(q * K[j] * P[t,j])			# predicted cpue index in log space 
+      #O[t,j] ~ dlnorm(Omed[t,j], itau2)     # fit to cpue index with log of predicted cpue index and estimated precision
+      imu2[t,j]<-itau2*CVW[t,j]
+      #itau2[t,j] ~ dgamma(itau2.a[t,j],itau2.b[t,j])
+      O[t,j] ~ dlnorm(Omed[t,j], imu2[t,j])     # fit to cpue index with observation errors from cv
+    }
+  }
+}
