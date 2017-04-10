@@ -5,8 +5,7 @@ GetVMSData <- function(update=T){
   ##############################################################################
   if(update==T){
   # open DB connection  .. need to be defined elsewhere .. private file
-  RODBCconn <- MakeConnection( ) 
-#####   RODBCconn <- odbcConnect("PTRAN", uid=oracle.personal.user, pwd=oracle.personal.password)
+   RODBCconn <- odbcConnect("ptran",oracle.personal.user,oracle.personal.password, believeNRows = F)
 
   #Define a list of VRNs from Clam database
   ves.q <- "SELECT DISTINCT CLAM.CLAMVESSEL.CFV

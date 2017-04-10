@@ -6,7 +6,7 @@ GetLogData <- function(update=T){
   if(update==T){
    # open DB connection  .. need to be defined elsewhere .. private file
    require(RODBC)
-   RODBCconn <- odbcConnect("ptran",oracle.personal.user,oracle.personal.password)
+   RODBCconn <- odbcConnect("ptran",oracle.personal.user,oracle.personal.password, believeNRows = F)
    log.q <- "  SELECT M.LOGRECORD_ID,V.VESSEL_NAME,V.CFV,
 to_char(M.RECORD_DATE, 'YYYY-MM-DD') RECORD_DATE, M.START_TIME, to_char(M.RECORD_DATE, 'YYYY') YEAR, M.RECORD_NO, TRIP.TRIP_NO, TRIP.LOGTRIP_ID,
    M.SUBTRIP_NO,M.LOGGEAR_ID,M.LAT_DD,

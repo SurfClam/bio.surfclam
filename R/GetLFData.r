@@ -5,7 +5,7 @@ GetLFData <- function(update=T){
   ##############################################################################
   if(update==T){
    # open DB connection  .. need to be defined elsewhere .. private file
-   RODBCconn <- MakeConnection( ) 
+   RODBCconn <- odbcConnect("ptran",oracle.personal.user,oracle.personal.password, believeNRows = F)
    lf.q <- "Select 
        DECODE(SIGN(LATITUDE_DD - (39.0 + (ABS(LONGITUDE_DD)-50.0)*0.88333333)),-1,4,0,4,1,3) AREA,
        ROUND(M.LENGTH,0) RLENGTH,

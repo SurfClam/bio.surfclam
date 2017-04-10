@@ -21,7 +21,7 @@
 #install_github("Beothuk/bio.base")
 #require(bio.base)
 
-RLibrary( "devtools","PBSmapping", "lubridate", "trip", "fields","spatstat","TeachingDemos","gstat","CircStats","splancs") # Load required packages
+RLibrary( "devtools","PBSmapping", "lubridate", "trip", "fields","spatstat","TeachingDemos","gstat","CircStats","splancs","RODBC") # Load required packages
 
 # install bio.packages from GitHub
 #install_github("Beothuk/bio.base")
@@ -39,7 +39,7 @@ RLibrary( "devtools","PBSmapping", "lubridate", "trip", "fields","spatstat","Tea
 
 ## Load Data
 
-update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
+update.data=T # TRUE accesses data from database if on a DFO windows machine
 
 
   # log data
