@@ -6,7 +6,7 @@ GridMapPlot = function(grid.out,yrs=yrs,nr=ceiling(length(yrs)/nc),nc=2,wd=8,ht=
 	require(CircStats)
 	aspr=1/cos(rad(mean(yl)))
 
-  	c100 <- read.table(file.path( project.datadirectory("polygons"), "data","Basemaps","Marine","Bathymetry","CHS100.ll"),header=T)
+  	c100 <- read.table(file.path( project.datadirectory("bio.polygons"), "data","Basemaps","Marine","Bathymetry","CHS100.ll"),header=T)
 
 
 	if(graphic=='pdf')pdf(file.path( project.datadirectory("bio.surfclam"),"figures",paste0("GridMap",info,".pdf")),wd,ht)

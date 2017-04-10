@@ -43,8 +43,8 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
 
 
   # log data
-  #log.data <- GetLogData(update=update.data)
   processed.log.data <- ProcessLogData(GetLogData(update=update.data))
+  #log.data <- GetLogData(update=update.data)
   # save(processed.log.data,file=file.path( project.datadirectory("bio.surfclam"), "data", "processedLogdata.Rdata" ))
 
   #VMS data
@@ -162,7 +162,7 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
   # Banquereau
   p$yrs= list(2004:2015)
   Totalgrid.out <- FisheryGridPlot(fisheryList,p,vms=T,fn='totalVMS',boundPoly=Banq100,isobath=NULL,axes=F,ht=8,wd=11,xlab='',ylab='',effort.units='km2')
-  Totalgrid.out <- FisheryGridPlot(fisheryList,p,vms=T,fn='totalVMS',boundPoly=Banq100,isobath=seq(50,500,50),bathy.source='bathy',nafo='all')#,aspr=1)
+  Totalgrid.out <- FisheryGridPlot(fisheryList,p,vms=T,fn='totalVMSv2',boundPoly=Banq100,isobath=seq(50,500,50),bathy.source='bathy',nafo='all')#,aspr=1)
   save(Totalgrid.out,file=file.path( project.datadirectory("bio.surfclam"), "data", "griddedFisheryDataTotal.Rdata" ))
   p$yrs= list(2004:2006,2005:2007,2006:2008,2007:2009,2008:2010,2009:2011,2010:2012,2011:2013,2012:2014,2013:2015)
   3yrgrid.out <- FisheryGridPlot(fisheryList,p,vms=T,fn='3yrVMS',boundPoly=Banq100,isobath=seq(50,500,50),bathy.source='bathy',nafo='all')#,aspr=1)
