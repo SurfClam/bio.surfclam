@@ -18,9 +18,23 @@
 ##
 ###############################################################################
 
-RLibrary("bio.surfclam","bio.lobster","bio.utilities","bio.spacetime","bio.temperature","SpatialHub")
+#install_github("Beothuk/bio.base")
+#require(bio.base)
 
-RLibrary( "PBSmapping", "lubridate", "trip" ,"spatstat","TeachingDemos") # Load required packages
+RLibrary( "devtools","PBSmapping", "lubridate", "trip", "fields","spatstat","TeachingDemos","gstat","CircStats","splancs") # Load required packages
+
+# install bio.packages from GitHub
+#install_github("Beothuk/bio.base")
+#install_github("Beothuk/bio.polygons")
+#install_github("Beothuk/bio.utilities")
+#install_github("LobsterScience/bio.lobster")
+#install_github("BradHubley/SpatialHub")
+
+# install bio.surfclam from local copy
+#install_git("C:/bio/bio.surfclam")
+
+	RLibrary("bio.surfclam","bio.lobster","bio.utilities","bio.polygons","SpatialHub")#,"bio.spacetime","bio.temperature")
+
 
 
 ## Load Data
@@ -116,7 +130,7 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
   }
   dev.off()
 
-  # VMS GIF!!!
+  # VMS GIF!!! takes awhile
   # version 1: daily images of past twoweeks fishing
   VMSgif(fisheryList,yrs=2004:2015,tail=14,pie.scale=7000,wd=800,ht=600,xlim=c(-60,-57.2),ylim=c(44,45.1),isobath=seq(50,500,50),bathy.source='bathy',poly.lst=list(VMSden.poly,data.frame(PID=1,col=rgb(0,0,0,0.2))))
 
@@ -318,7 +332,7 @@ update.data=FALSE # TRUE accesses data from database if on a DFO windows machine
     FishedAreaBiomass[[i]] = sum( FishedAreaDensity[[i]]$Z,na.rm=T)
 
     # generate contour lines
-    cont.lst<-contour.gen(clam.contours$image.dat,lvls,Banq100,col="YlGn",colorAdj=1)
+    cont.lst<-contourGen(clam.contours$image.dat,lvls,Banq100,col="YlGn",colorAdj=1)
 
     # plot Map
     ClamMap2('Ban',isobath=seq(50,500,50),bathy.source='bathy',nafo='all',contours=cont.lst,title=paste("Banqureau Surf Clam Survey Density",i))
