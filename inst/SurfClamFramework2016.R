@@ -10,7 +10,7 @@
 ##
 ##  Artic Surf Clam Assessment Script
 ##
-##  April 2017
+##  April 2017 
 ##
 ##  Brad Hubley
 ##  Susan Heaslip
