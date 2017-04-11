@@ -223,7 +223,7 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
 
   # distribution of surf clams catch from log data
   p$yrs=list(2004:2010,2011:2015)
-  b=1
+  b=1 # switch 1=Banq, 2=Grand
     
     # or use this
    # distribute Catch and Effort data over VMS locations
@@ -236,7 +236,7 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
     
     # interpolate abundance
     interp.data <- na.omit(subset(processed.log.data,year%in%p$yrs[[i]]&bank==b&lat_dd>Min_lat[b]&lat_dd<Max_lat[b]&lon_dd>Min_long[b]&lon_dd<Max_long[b],c('logrecord_id','lon_dd','lat_dd','round_catch','area')))
-    interp.data <-subset(vmslogdata,year%in%p$yrs[[i]],c('EID','X','Y','C','A')))
+    interp.data <-subset(vmslogdata,year%in%p$yrs[[i]],c('EID','X','Y','C','A'))
     catch.contours <- interpolation(interp.data[,-5],ticks='define',place=3,nstrata=5,str.min=0,interp.method='gstat',blank=F,res=1/111.12,sres=1/111.12,smooth=T,smooth.fun=sum)
     effort.contours <- interpolation(interp.data[,-4],ticks='define',place=3,nstrata=5,str.min=0,interp.method='gstat',blank=F,res=1/111.12,sres=1/111.12,smooth=T,smooth.fun=sum)
 
@@ -287,7 +287,7 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
   LengthWeight.plt(LenWt2010.fit,lw=3,ht=8,wd=8,cx=1.5)
 
   l = seq(2.5,200,5)
-  wal = l^LenWt2010.fit$B * LenWt2010.fit$A 
+  wal = l ^ LenWt2010.fit$B * LenWt2010.fit$A 
 
   # LengthFrequencies
   FisheryDataList = c(fisheryList,list(lf.data=lf.data))
