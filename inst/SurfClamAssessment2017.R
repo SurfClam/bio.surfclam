@@ -52,7 +52,7 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
   fisheryList <- ProcessVMSData(GetVMSData(update=update.data),processed.log.data)
   #processed.log.data = fisheryList$log.data
   processed.vms.data = fisheryList$vms.data
-  load(file=file.path( project.datadirectory("bio.surfclam"), "data", "griddedFisheryDataTotal.Rdata" ))
+  #load(file=file.path( project.datadirectory("bio.surfclam"), "data", "griddedFisheryDataTotal.Rdata" ))
 
   # length frequency data
   lf.data <- GetLFData(update=update.data)
@@ -76,7 +76,7 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
 
   p=list()
   p$bank= "Ban"
-  p$yrs= list(2004:2015)
+  p$yrs= list(2004:2016)
   #p$yrs= list(1986:2010,2000:2010,2009:2010)
   p$effort.threshold = c(15000,200000)
   p$catch.threshold = c(1500,30000)
@@ -102,7 +102,7 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
   ClamMap2('all',isobath=seq(50,500,50))
 
   with(subset(processed.log.data,area>0),points(lon_dd,lat_dd,pch=16,cex=0.1,col=rgb(0,0,0,0.1)))
-  with(subset(processed.log.data,year==2015&area>0),points(lon_dd,lat_dd,pch=16,cex=0.2,col=rgb(1,0,0,0.2)))
+  with(subset(processed.log.data,year==2016&area>0),points(lon_dd,lat_dd,pch=16,cex=0.2,col=rgb(1,0,0,0.2)))
   with(surveyList$surveyData,points(slon,slat,pch=16,cex=0.2,col=rgb(0,1,0,0.2)))
   rect(Min_long,Min_lat,Max_long,Max_lat)
 
@@ -122,7 +122,7 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
 
   # VMS Data
   pdf(file.path( project.datadirectory("bio.surfclam"), "figures","FishingLocations.pdf"),11,8)
-  for (i in 2002:2015) {
+  for (i in 2002:2016) {
   ClamMap2('Ban',isobath=seq(50,500,50),title=i,bathy.source='bathy',nafo='all')
   with(subset(processed.log.data,year==i&area>0),points(lon_dd,lat_dd,pch=16,cex=0.5,col=rgb(1,0,0,0.2)))
   with(subset(processed.vms.data,year==i),points(lon,lat,pch=16,cex=0.2,col=rgb(0,0,0,.1)))
@@ -132,10 +132,10 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
 
   # VMS GIF!!! takes awhile
   # version 1: daily images of past twoweeks fishing
-  VMSgif(fisheryList,yrs=2004:2015,tail=14,pie.scale=7000,wd=800,ht=600,xlim=c(-60,-57.2),ylim=c(44,45.1),isobath=seq(50,500,50),bathy.source='bathy',poly.lst=list(VMSden.poly,data.frame(PID=1,col=rgb(0,0,0,0.2))))
+  VMSgif(fisheryList,yrs=2004:2016,tail=14,pie.scale=7000,wd=800,ht=600,xlim=c(-60,-57.2),ylim=c(44,45.1),isobath=seq(50,500,50),bathy.source='bathy',poly.lst=list(VMSden.poly,data.frame(PID=1,col=rgb(0,0,0,0.2))))
 
   # version 2: weeky images of past months fishing, no lats, lons or bathy
-  VMSgif(fisheryList,yrs=2004:2015,interval=7,tail=28,pie.scale=7000,wd=800,ht=600,xlim=c(-60,-57.2),ylim=c(44,45.1),ptcex=0.2,axes=F,xlab='',ylab='',isobath=NULL,ptcol=rgb(1,0,0,0.5),poly.lst=list(VMSden.poly,data.frame(PID=1,col=rgb(0,0,0,0.2))))
+  VMSgif(fisheryList,yrs=2004:2016,interval=7,tail=28,pie.scale=7000,wd=800,ht=600,xlim=c(-60,-57.2),ylim=c(44,45.1),ptcex=0.2,axes=F,xlab='',ylab='',isobath=NULL,ptcol=rgb(1,0,0,0.5),poly.lst=list(VMSden.poly,data.frame(PID=1,col=rgb(0,0,0,0.2))))
 
   # plot of VMS data
   pdf(file.path( project.datadirectory("bio.surfclam"), "figures","VMSLocations.pdf"),11,8)
@@ -160,14 +160,14 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
 ## Grid Plots
 
   # Banquereau
-  p$yrs= list(2004:2015)
+  p$yrs= list(2004:2016)
   Totalgrid.out <- FisheryGridPlot(fisheryList,p,vms=T,fn='totalVMS',boundPoly=Banq100,isobath=NULL,axes=F,ht=8,wd=11,xlab='',ylab='',effort.units='km2')
   Totalgrid.out <- FisheryGridPlot(fisheryList,p,vms=T,fn='totalVMSv2',boundPoly=Banq100,isobath=seq(50,500,50),bathy.source='bathy',nafo='all')#,aspr=1)
   save(Totalgrid.out,file=file.path( project.datadirectory("bio.surfclam"), "data", "griddedFisheryDataTotal.Rdata" ))
-  p$yrs= list(2004:2006,2005:2007,2006:2008,2007:2009,2008:2010,2009:2011,2010:2012,2011:2013,2012:2014,2013:2015)
-  3yrgrid.out <- FisheryGridPlot(fisheryList,p,vms=T,fn='3yrVMS',boundPoly=Banq100,isobath=seq(50,500,50),bathy.source='bathy',nafo='all')#,aspr=1)
+  p$yrs= list(2004:2006,2005:2007,2006:2008,2007:2009,2008:2010,2009:2011,2010:2012,2011:2013,2012:2014,2013:2016)
+  grid3yr.out <- FisheryGridPlot(fisheryList,p,vms=T,fn='3yrVMS',boundPoly=Banq100,isobath=seq(50,500,50),bathy.source='bathy',nafo='all')#,aspr=1)
 
-  p$yrs= 2004:2015
+  p$yrs= 2004:2016
 
   #grid.out <- FisheryGridPlot(fisheryList,p,fn='annualLog',boundPoly=Banq100,isobath=seq(50,500,50),bathy.source='bathy',nafo='all')#,aspr=1)
   AnnGrid.out <- FisheryGridPlot(fisheryList,p,vms=T,fn='annualVMS',boundPoly=Banq100,isobath=seq(50,500,50),bathy.source='bathy',nafo='all')#,aspr=1)
@@ -176,12 +176,12 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
   save(AnnGrid.out,file=file.path( project.datadirectory("bio.surfclam"), "data", "griddedFisheryDataAnnual.Rdata" ))
   load(file=file.path( project.datadirectory("bio.surfclam"), "data", "griddedFisheryDataAnnual.Rdata" ))
 
-  GridMapPlot(AnnGrid.out,yrs=2004:2015,xl=c(-59.85,-57.45),yl=c(44.3,44.8),graphic='R',info='catch')
-  GridMapPlot(AnnGrid.out,yrs=2004:2015,xl=c(-59.85,-57.45),yl=c(44.3,44.8),graphic='pdf',info='effort')
+  GridMapPlot(AnnGrid.out,yrs=2004:2016,xl=c(-59.85,-57.45),yl=c(44.3,44.8),graphic='R',info='catch')
+  GridMapPlot(AnnGrid.out,yrs=2004:2016,xl=c(-59.85,-57.45),yl=c(44.3,44.8),graphic='pdf',info='effort')
 
 
   # GrandBank
-  p$yrs= list(2004:2015)
+  p$yrs= list(2004:2016)
   p$bank= "Grand"
   p$Min_lon = -51.5
   p$Max_lon = -48.5
@@ -193,7 +193,7 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
 
 
   ## summary table of catch and effort data
-  Years=1986:2015
+  Years=1986:2016
 
   Ban.E = with(subset(processed.log.data,bank==1),tapply(area,year,sum,na.rm=T))
   Ban.C = with(subset(processed.log.data,bank==1),tapply(round_catch,year,sum,na.rm=T))
@@ -203,26 +203,26 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
   Grand.C = with(subset(processed.log.data,bank==2),tapply(round_catch,year,sum,na.rm=T))
   Grand = data.frame(Year=as.numeric(names(Grand.C)),Grand.Catch = Grand.C/10^3, Grand.Effort = Grand.E/10^6, Grand.CPUE = Grand.C/Grand.E*1000)
 
-  Table1 = merge(Ban,Grand,all=T)
+  Table1 = subset(merge(Ban,Grand,all=T),Year%in%Years)
   write.csv(Table1,file.path( project.datadirectory("bio.surfclam"), "R","CatchEffort.csv"),row.names=F)
 
-  CatchEffortPlot(Table1,graphic="R")
+  CatchEffortPlot(Table1,graphic="pdf")
 
   ## exploration of seasonal fishing patterns
   pdf(file.path( project.datadirectory("bio.surfclam"), "figures","SeasonalFishingPattern.pdf"),8,11)
 
-  p$yrs= 2007:2015
+  p$yrs= 2007:2016
   par(mfrow=c(3,3),mar=c(0,0,0,0))
   for (i in 1:length(p$yrs)) {
       fishing.season(subset(fisheryList$log.data,year%in%p$yrs[[i]]&bank==1,c('record_date','area')),smooth=0.01,title="")
       mtext("Relative effort",3,-2,cex=1.2,outer=T) 
     }
-    # Apparently they fish pretty much all year round except for the winter of 2015, when presumably Banquereau was under 15ft of snow like everywhere else
+    # Apparently they fish pretty much all year round except for the winter of 2016, when presumably Banquereau was under 15ft of snow like everywhere else
   dev.off()
 
 
   # distribution of surf clams catch from log data
-  p$yrs=list(2004:2010,2011:2015)
+  p$yrs=list(2004:2010,2011:2016)
   b=1 # switch 1=Banq, 2=Grand
     
     # or use this
@@ -460,7 +460,7 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
 
 ###### create area summary tables 
 
-  yrs = 2004:2015
+  yrs = 2004:2016
   Ban.C = with(subset(processed.log.data,bank==1&year%in%yrs),tapply(round_catch,year,sum,na.rm=T))
   SPMdata = SPMsetup(combineddata,Totalgrid.out,VMSden.poly,new.areas,yrs=yrs,effort.min=100000,r=5,n.min=7)
   SPMdataList = SPMdata$SPMdataList
@@ -485,7 +485,7 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
    with(fishedarea,tapply(Z,PID,sum))
   totalarea = merge(totalarea,keyt) 
 
-  areaSummary = data.frame(totalareas,fished.area = SPMdata$Habitat, avg.annual.catch = colMeans(areaCatchesBU), total.catch.since.2004 = colSums(areaCatchesBU), biomass.survey.2010.total.area =with(totalarea,tapply(Z,PID,sum)),biomass.survey.2010 =with(fishedarea,tapply(Z,PID,sum)), biomass.cpue.2010 =SPMdataList$O['2010',], biomass.cpue.2015 = SPMdataList$O['2015',])
+  areaSummary = data.frame(totalareas,fished.area = SPMdata$Habitat, avg.annual.catch = colMeans(areaCatchesBU), total.catch.since.2004 = colSums(areaCatchesBU), biomass.survey.2010.total.area =with(totalarea,tapply(Z,PID,sum)),biomass.survey.2010 =with(fishedarea,tapply(Z,PID,sum)), biomass.cpue.2010 =SPMdataList$O['2010',], biomass.cpue.2016 = SPMdataList$O['2016',])
   areaSummary = rbind(areaSummary,colSums(areaSummary))
   areaSummary$PID[6] = "Total"
   write.csv(areaSummary,file.path( project.datadirectory("bio.surfclam"), "R","areaSummary.csv"),row.names=F)
@@ -539,7 +539,7 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
   combineddata = rbind(oldlogdata,subset(vmslogdata,year>2002))
   combineddata$EID = 1:nrow(combineddata) 
 
-  yrs = 1988:2015
+  yrs = 1988:2016
 
   # plot of CPUE data
   CPUEdata=SeasonalCPUE(combineddata,yrs,new.areas,lab='',graphic='R',wd=10,ht=10,col=rgb(0,0,0,0.3),pch=16,cex=0.5)
