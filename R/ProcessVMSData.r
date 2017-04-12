@@ -8,7 +8,6 @@ ProcessVMSData <- function(vms.data,log.data){
 
   names(vms.data) <- tolower(names(vms.data))
   vms.data$vmsdate <- as.POSIXct(vms.data$vmsdate,tz="GMT")  # VMS data is in UTC, assign timezone
-  vms.data$vessel_name <- tolower(vms.data$vessel_name)
   ########################################
   # Clean VMS data selected from VMS_pos #
   ########################################
