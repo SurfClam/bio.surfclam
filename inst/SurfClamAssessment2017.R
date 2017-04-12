@@ -612,22 +612,22 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
   ## Plotting model results
 
     # plot fits to abundance indices 
-    SPMfit.plt(SPmodel1.out, yrs=yrs, CI=T,CV=F,graphic='pdf',H = SPMdata$Habitat, ht=8,wd=6,rows=5,alpha=c(0.5,0.05),name='SPM1',ymax=420)
+    SPMfit.plt(SPmodel1.out, yrs=yrs, CI=T,CV=F,graphic='R',H = SPMdata$Habitat, ht=8,wd=6,rows=5,alpha=c(0.5,0.05),name='SPM1',ymax=420)
 
     # plot the posterior distributions of the estimated parameters
-    SPMpost.plt(SPmodel1.out,SPMpriors, graphic='pdf',nr=2,nc=3,wd=15,name='SPM1')
+    SPMpost.plt(SPmodel1.out,SPMpriors, graphic='R',nr=2,nc=3,wd=15,name='SPM1')
     #post.plt(SPmodel.out,SPmodelpriors,years=yrs, graphic='R',nr=2,nc=3,wd=15,multi=T)
 
 
     # plot biomass 
-    SPMbiomass.plt(SPmodel1.out, yrs=yrs, CI=T,graphic='pdf',ht=8,wd=6,rows=5,alpha=c(0.5,0.05),name='SPM1',ymax=280)
+    SPMbiomass.plt(SPmodel1.out, yrs=yrs, CI=T,graphic='R',ht=8,wd=6,rows=5,alpha=c(0.5,0.05),name='SPM1',ymax=280)
 
     # exploitation
-    SPMexploitation.plt(SPmodel1.out, yrs=yrs, CI=T,graphic='pdf',ht=8,wd=6,rows=5,alpha=c(0.5,0.05),name='SPM1',ymax=0.32)
+    SPMexploitation.plt(SPmodel1.out, yrs=yrs, CI=T,graphic='R',ht=8,wd=6,rows=5,alpha=c(0.5,0.05),name='SPM1',ymax=0.32)
 
 
     # plot stocastic reference points
-    refs=SPMRefpts(SPmodel1.out,col='grey', graphic='pdf')
+    refs=SPMRefpts(SPmodel1.out,col='grey', graphic='R')
 
     # phase plots
     SPMPhaseplts(SPmodel1.out,ymax=2.2, graphic='R')
