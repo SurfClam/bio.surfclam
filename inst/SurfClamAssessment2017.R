@@ -437,7 +437,7 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
   GrandTotalgrid.out = FisheryGridPlot(fisheryList,p,vms=T,fn='GrandTotalVMS',isobath=110,lg.place="topleft",ht=8,wd=6,outsideBorder=T,axes=F,xlab='',ylab='')#,aspr=1)
 
   grandvmslogdata = assignLogData2VMS(fisheryList, p)
-
+  grandvmslogdata = subset(grandvmslogdata,X>p$Min_lon&X<p$Max_lon&Y>p$Min_lat&Y<p$Max_lat)
 
 
   ClamMap2('Grand',isobath=seq(50,500,50))
@@ -456,7 +456,12 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
   dev.off()
  
  # create a polygon from vms density as a proxy for clam habitat
-  pdf(file.path( project.datadirectory("bio.surfclam"), "figures","VMSdensityGrand.pdf"),12,6)
-  VMSden.poly = vmsDensity(vmslogdata,sig=0.2,res=0.1,lvl=30)
+  pdf(file.path( project.datadirectory("bio.surfclam"), "figures","VMSdensityGrand.pdf"),6,12)
+  GrandVMSden.poly = vmsDensity(grandvmslogdata,sig=0.2,res=0.1,lvl=20,lab="Grand")
   dev.off()
 
+ # plot of VMS data
+  pdf(file.path( project.datadirectory("bio.surfclam"), "figures","VMSAreasGrand.pdf"),8,11)
+  ClamMap2('Grand',isobath=seq(50,500,50),bathy.source='bathy')
+  addPolys(GrandVMSden.poly,col=rgb(0,0,0,0.2))
+  dev.off()
