@@ -184,7 +184,7 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
   Table1 = subset(merge(Ban,Grand,all=T),Year%in%Years)
   write.csv(Table1,file.path( project.datadirectory("bio.surfclam"), "R","CatchEffort.csv"),row.names=F)
 
-  CatchEffortPlot(Table1,graphic="pdf")
+  CatchEffortPlot(Table1,graphic="pdf",wd=10)
 
   ## exploration of seasonal fishing patterns
   pdf(file.path( project.datadirectory("bio.surfclam"), "figures","SeasonalFishingPattern.pdf"),8,11)
@@ -221,7 +221,7 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
 
   # LengthFrequencies
   FisheryDataList = c(fisheryList,list(lf.data=lf.data))
-  LengthFrequencies(FisheryDataList, DS="Fishery", bins=seq(0,200,5), Yrs=2009:2013, wal = wal, fn='BanqCatch', rel=F, ymax=40000,ylab="Number of Clams") 
+  LengthFrequencies(FisheryDataList, DS="Fishery", bins=seq(0,200,5), Yrs=2009:2016, wal = wal, fn='BanqCatch', rel=F, ymax=60000,ylab="Number of Clams") 
 
 
 
