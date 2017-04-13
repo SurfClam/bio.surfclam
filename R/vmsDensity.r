@@ -1,5 +1,5 @@
 #' @export
-vmsDensity = function(vmslogdata,sig=0.1,res=0.25,lvl=30,lab=''){
+vmsDensity = function(vmslogdata,sig=0.1,res=0.25,lvl=30,lab='',zone=21){
 
 	require(spatstat)
     
@@ -28,7 +28,7 @@ vmsDensity = function(vmslogdata,sig=0.1,res=0.25,lvl=30,lab=''){
   VMSden.poly <- CP$PolySet
 
   attr(VMSden.poly,'projection')<-"UTM"
-  attr(VMSden.poly,'zone')<-21
+  attr(VMSden.poly,'zone')<-zone
   VMSden.poly = convUL(VMSden.poly)
 
   junk<-data.frame(PID=1,POS=1:4,X=c(162,161,161,162),Y=c(-41,-41,-40,-40))

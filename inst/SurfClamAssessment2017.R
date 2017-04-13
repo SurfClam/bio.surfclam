@@ -315,17 +315,17 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
   dimnames(areaBiomass)=list(c(yrs,"Mean"),c(paste("Area",1:5),"Total"))
   write.csv(areaBiomass,file.path( project.datadirectory("bio.surfclam"), "R","areaBiomass.csv"))
 
-  fishedarea = SPMdata$Habitat
-  keyf = findPolys(fishedarea,new.areas)
-  keyt = findPolys(totalarea,new.areas)
-  fishedarea = merge(fishedarea,keyf)
-   with(fishedarea,tapply(Z,PID,sum))
-  totalarea = merge(totalarea,keyt) 
+  #fishedarea = SPMdata$Habitat
+  #keyf = findPolys(fishedarea,new.areas)
+  #keyt = findPolys(totalarea,new.areas)
+  #fishedarea = merge(fishedarea,keyf)
+  # with(fishedarea,tapply(Z,PID,sum))
+  #totalarea = merge(totalarea,keyt) 
 
-  areaSummary = data.frame(totalareas,fished.area = SPMdata$Habitat, avg.annual.catch = colMeans(areaCatchesBU), total.catch.since.2004 = colSums(areaCatchesBU), biomass.survey.2010.total.area =with(totalarea,tapply(Z,PID,sum)),biomass.survey.2010 =with(fishedarea,tapply(Z,PID,sum)), biomass.cpue.2010 =SPMdataList$O['2010',], biomass.cpue.2016 = SPMdataList$O['2016',])
-  areaSummary = rbind(areaSummary,colSums(areaSummary))
-  areaSummary$PID[6] = "Total"
-  write.csv(areaSummary,file.path( project.datadirectory("bio.surfclam"), "R","areaSummary.csv"),row.names=F)
+  #areaSummary = data.frame(totalareas,fished.area = SPMdata$Habitat, avg.annual.catch = colMeans(areaCatchesBU), total.catch.since.2004 = colSums(areaCatchesBU), biomass.survey.2010.total.area =with(#totalarea,tapply(Z,PID,sum)),biomass.survey.2010 =with(fishedarea,tapply(Z,PID,sum)), biomass.cpue.2010 =SPMdataList$O['2010',], biomass.cpue.2016 = SPMdataList$O['2016',])
+  #areaSummary = rbind(areaSummary,colSums(areaSummary))
+  #areaSummary$PID[6] = "Total"
+  #write.csv(areaSummary,file.path( project.datadirectory("bio.surfclam"), "R","areaSummary.csv"),row.names=F)
 
 
 ################ model run 1: 
@@ -404,7 +404,7 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
 
 
     # plot biomass 
-    SPMbiomass.plt(SPmodel1.out, yrs=yrs, CI=T,graphic='R',ht=8,wd=6,rows=5,alpha=c(0.5,0.05),name='SPM1',ymax=320)
+    SPMbiomass.plt(SPmodel1.out, yrs=yrs, CI=T,graphic='pdf',ht=8,wd=6,rows=5,alpha=c(0.5,0.05),name='SPM1',ymax=320)
 
     # exploitation
     SPMexploitation.plt(SPmodel1.out, yrs=yrs, CI=T,graphic='pdf',ht=8,wd=6,rows=5,alpha=c(0.5,0.05),name='SPM1',ymax=0.32)
@@ -418,51 +418,11 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
 
 
 
-#### with higher q prior
 
-  alpha=6
-  deff=.73
-  #deff=.45
-  beta=(1-deff)*alpha/deff
-  #dist.plt("beta",alpha,beta,xl=c(0,1))
-  var=alpha*beta/((alpha+beta)^2*(alpha+beta+1))
 
-    SPMpriors=list(
-      logK=        list(a=12,      b=2,         d="dnorm",    i1=9,   i2=12,  l=1   ),    # carrying capacity
-      logB0=       list(a=rep(11,NJ), b=rep(1,NJ), d="dnorm",    i1=10,   i2=9,  l=NJ  ),    # initial biomass
-      #r=           list(a=3,       b=0.5,       d="dgamma",    i1=0.2, i2=0.1, l=1   ),    # intrinsic rate of increase
-      r.u=         list(a=0,       b=1,         d="dunif",    i1=0.2, i2=0.1, l=1   ),    # intrinsic rate of increase
-      r.sd=        list(a=-0.35,   b=0.08,      d="dlnorm",   i1=0.7, i2=0.5, l=1   ),    # intrinsic rate of increase
-      q=           list(a=alpha,   b=beta,      d="dbeta",    i1=0.5, i2=0.8, l=1   ),    # clam dredge efficiency
-      #tau=         list(a=0,       b=1,         d="dunif",   i1=2,  i2=3,  l=1   ),   # observation error (precision)
-      itau2=       list(a=3,       b=0.4,   d="dgamma",   i1=15,  i2=30,  l=1   ),   # observation error (precision)
-      #itau2=       list(a=shape,    b=rate,   d="dgamma",   i1=15,  i2=30,  l=NY*NJ   ),   # observation error (precision)
-      sigma=       list(a=0,       b=1,         d="dunif",    i1=2,   i2=3,   l=1   )    # process error (SD)
-      #isigma2=       list(a=3,       b=0.5,         d="dgamma",    i1=2,   i2=3,   l=1   )    # process error (precision)
-    ) 
-
-    SPmodel2.out=runBUGS("SPhyper1", SPMdataList, SPMpriors, SPMdataList$yrs, n = 600000, burn = 100000, thin = 100,debug=F,parameters=c(names(SPMpriors),'K','P','r','B0'),sw='jags',inits=F)
-    save(SPmodel1.out,file=file.path( project.datadirectory("bio.surfclam"), "data", "SPM2output.Rdata" ))
-    #load(file=file.path( project.datadirectory("bio.surfclam"), "data", "SPM1output.Rdata" ))
-    SPmodel2.out$median
-
-    # hyperprior
-    SPMpriors$r = list(a=log(SPmodel2.out$median$r.u), b=SPmodel2.out$median$r.sd,        d="dlnorm",    i1=0.2, i2=0.1, l=1   )
-
-  ## Plotting model results
-
-    # plot fits to abundance indices 
-    SPMfit.plt(SPmodel2.out, yrs=yrs, CI=T,CV=F,graphic='R',H = SPMdata$Habitat, ht=8,wd=6,rows=5,alpha=c(0.5,0.05),name='SPM2',ymax=420)
-
-    # plot the posterior distributions of the estimated parameters
-    SPMpost.plt(SPmodel2.out,SPMpriors, graphic='R',nr=2,nc=3,wd=15,name='SPM2')
-    #post.plt(SPmodel.out,SPmodelpriors,years=yrs, graphic='R',nr=2,nc=3,wd=15,multi=T)
 
 
 ################################ GRand Bank ################################
-
-
-
 
 
   # GrandBank
@@ -476,7 +436,27 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
 
   GrandTotalgrid.out = FisheryGridPlot(fisheryList,p,vms=T,fn='GrandTotalVMS',isobath=110,lg.place="topleft",ht=8,wd=6,outsideBorder=T,axes=F,xlab='',ylab='')#,aspr=1)
 
+  grandvmslogdata = assignLogData2VMS(fisheryList, p)
 
 
 
+  ClamMap2('Grand',isobath=seq(50,500,50))
+
+  rect(Min_long,Min_lat,Max_long,Max_lat)
+  with(subset(processed.log.data,year==2013&area>0),points(lon_dd,lat_dd,pch=16,cex=0.5,col=rgb(0,0,1,0.2)))
+  with(surveyList$surveyData,points(slon,slat,pch=16,cex=0.2,col=rgb(0,1,0,0.2)))
+
+
+
+
+  # plot of VMS data
+  pdf(file.path( project.datadirectory("bio.surfclam"), "figures","VMSLocationsGrand.pdf"),8,11)
+  ClamMap2('Grand',isobath=seq(50,500,50),bathy.source='bathy')
+  with(fisheryList$vms.data,points(lon,lat,pch=16,cex=0.2,col=rgb(0,0,0,.1)))
+  dev.off()
+ 
+ # create a polygon from vms density as a proxy for clam habitat
+  pdf(file.path( project.datadirectory("bio.surfclam"), "figures","VMSdensityGrand.pdf"),12,6)
+  VMSden.poly = vmsDensity(vmslogdata,sig=0.2,res=0.1,lvl=30)
+  dev.off()
 
