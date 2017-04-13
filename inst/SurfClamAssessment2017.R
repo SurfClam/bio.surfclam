@@ -224,11 +224,16 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
 
 
 
-#### Clam Habitat using VMS data ####
+#### Clam Habitat using VMS data and Areas ####
   
+  # distribute Catch and Effort data over VMS locations
     vmslogdata = assignLogData2VMS(fisheryList, p)
     vmslogdata = subset(vmslogdata,EID%in%findPolys(vmslogdata,Banq100, maxRows = 1e+06)$EID)
-    VMSden.poly = vmsDensity(vmslogdata,sig=0.2,res=0.1,lvl=30)
+
+  # create a polygon from vms density as a proxy for clam habitat
+  pdf(file.path( project.datadirectory("bio.surfclam"), "figures","VMSdensity.pdf"),12,6)
+  VMSden.poly = vmsDensity(vmslogdata,sig=0.2,res=0.1,lvl=30)
+  dev.off()
 
       load(file.path( project.datadirectory("bio.surfclam"),'data','VMSdensity.rdata'))
       write.csv(VMSden.poly,file.path( project.datadirectory("bio.surfclam"),'data',"VMSpolygons.csv"))
@@ -248,50 +253,6 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
       addLabels(data.frame(PID=1:5,label=1:5),polys=new.areas,placement="CENTROID",cex=2,font=2)
     dev.off()
    
-  new.areas  = read.csv(file.path( project.datadirectory("bio.surfclam"), "R","newareas.csv"))
-
-  attr(new.areas,"projection")="LL"
-  totalareas = calcArea(new.areas) 
-  fishedareas = calcArea(VMSden.poly,1)$area
- 
-  combineddata = rbind(oldlogdata,vmslogdata)
-  combineddata$EID = 1:nrow(combineddata) 
-
-
-
-
-############## Prepare Data for Production model ################
-
-
-  #interp.data = na.omit(subset(surveyList$surveyData,year==i&towtype%in%c(1,4)&towquality==1,c('EID','X','Y','stdcatch')))
-
-  #res = with(interp.data,spacetime.variogram(data.frame(X,Y),stdcatch,methods="gstat")) 
-   
-  # distribute Catch and Effort data over VMS locations
-  vmslogdata = assignLogData2VMS(fisheryList, p)
-  vmslogdata = subset(vmslogdata,EID%in%findPolys(vmslogdata,Banq100, maxRows = 1e+06)$EID)
-
-  oldlogdata = na.omit(subset(fisheryList$log.data, year<2003&bank==1&area>p$effort.threshold[1]&area<p$effort.threshold[2]&round_catch>p$catch.threshold[1]&round_catch<p$catch.threshold[2],  c("logrecord_id","lon_dd","lat_dd","round_catch","area","year","record_date")))
-  names(oldlogdata) = names(vmslogdata)
-  oldlogdata = subset(oldlogdata,EID%in%findPolys(oldlogdata,Banq100, maxRows = 1e+06)$EID)
- 
-  # create a polygon from vms density as a proxy for clam habitat
-  pdf(file.path( project.datadirectory("bio.surfclam"), "figures","VMSdensity.pdf"),12,6)
-  VMSden.poly = vmsDensity(vmslogdata,sig=0.2,res=0.1,lvl=20)
-  dev.off()
-  new.areas  = read.csv(file.path( project.datadirectory("bio.surfclam"), "R","newareas.csv"))
-
-  # sensitivity
-  lvls=c(10,15,20,25,30,35,40,45,50)
-  fishedarea=c()
-  for(i in 1:length(lvls)){
-   pdf(file.path( project.datadirectory("bio.surfclam"), "figures",paste0("VMSdensity",lvls[i],".pdf")),12,6)
-   VMSden.poly = vmsDensity(vmslogdata,sig=0.2,res=0.1,lvl=lvls[i])
-    fishedarea[i] = calcArea(VMSden.poly,1)$area
-  dev.off()
-  }
-
-  #VMSden.poly = joinPolys(VMSden.poly,junk,operation="DIFF")
 
   pdf(file.path( project.datadirectory("bio.surfclam"), "figures","NewAreas2.pdf"),11,8)
     ClamMap2("Ban",isobath=NULL,axes=F,xlab='',ylab='')
@@ -302,13 +263,35 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
     addLabels(data.frame(PID=1:5,label=1:5),polys=new.areas,placement="CENTROID",cex=2,font=2, col='black')
   dev.off()
 
+
+  # sensitivity
+  lvls=c(10,15,20,25,30,35,40,45,50)
+  fishedarea=c()
+  for(i in 1:length(lvls)){
+   pdf(file.path( project.datadirectory("bio.surfclam"), "figures",paste0("VMSdensity",lvls[i],".pdf")),12,6)
+   VMStmp.poly = vmsDensity(vmslogdata,sig=0.2,res=0.1,lvl=lvls[i])
+    fishedarea[i] = calcArea(VMStmp.poly,1)$area
+  dev.off()
+  }
+
+
+############## Prepare Data for Production model ################
+
+
+  oldlogdata = na.omit(subset(fisheryList$log.data, year<2003&bank==1&area>p$effort.threshold[1]&area<p$effort.threshold[2]&round_catch>p$catch.threshold[1]&round_catch<p$catch.threshold[2],  c("logrecord_id","lon_dd","lat_dd","round_catch","area","year","record_date")))
+  names(oldlogdata) = names(vmslogdata)
+  oldlogdata = subset(oldlogdata,EID%in%findPolys(oldlogdata,Banq100, maxRows = 1e+06)$EID)
+ 
+  #VMSden.poly = joinPolys(VMSden.poly,junk,operation="DIFF")
   combineddata = rbind(oldlogdata,subset(vmslogdata,year>2002))
   combineddata$EID = 1:nrow(combineddata) 
 
   yrs = 1988:2016
+  combineddata = subset(combineddata,year%in%yrs)
 
   # plot of CPUE data
   CPUEdata=SeasonalCPUE(combineddata,yrs,new.areas,lab='',graphic='pdf',wd=10,ht=10,col=rgb(0,0,0,0.3),pch=16,cex=0.5)
+  CPUEdata=SeasonalCPUE(combineddata,yrs,new.areas,lab='doc',graphic='pdf',wd=7,ht=10,col=rgb(0,0,0,0.3),pch=16,cex=0.5)
 
 
 ###### create area summary tables 
@@ -421,7 +404,7 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
 
 
     # plot biomass 
-    SPMbiomass.plt(SPmodel1.out, yrs=yrs, CI=T,graphic='pdf',ht=8,wd=6,rows=5,alpha=c(0.5,0.05),name='SPM1',ymax=280)
+    SPMbiomass.plt(SPmodel1.out, yrs=yrs, CI=T,graphic='R',ht=8,wd=6,rows=5,alpha=c(0.5,0.05),name='SPM1',ymax=320)
 
     # exploitation
     SPMexploitation.plt(SPmodel1.out, yrs=yrs, CI=T,graphic='pdf',ht=8,wd=6,rows=5,alpha=c(0.5,0.05),name='SPM1',ymax=0.32)

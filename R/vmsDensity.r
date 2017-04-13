@@ -1,5 +1,5 @@
 #' @export
-vmsDensity = function(vmslogdata,sig=0.1,res=0.25,lvl=30){
+vmsDensity = function(vmslogdata,sig=0.1,res=0.25,lvl=30,lab=''){
 
 	require(spatstat)
     
@@ -21,7 +21,7 @@ vmsDensity = function(vmslogdata,sig=0.1,res=0.25,lvl=30){
   contour(x,levels=lvl,drawlabels=F,add=T)
  
   x.lst = list(x=seq(x$xrange[1]+x$xstep/2,x$xrange[2],x$xstep),y=seq(x$yrange[1]+x$ystep/2,x$yrange[2],x$ystep),z=t(x$v))
-  save(x.lst,file=file.path( project.datadirectory("bio.surfclam"),'data','VMSdensity.rdata'))
+  save(x.lst,file=file.path( project.datadirectory("bio.surfclam"),'data',paste0(lab,'VMSdensity.rdata')))
 
   CL <- contourLines(x.lst,levels=lvl)
   CP <- convCP(CL)
