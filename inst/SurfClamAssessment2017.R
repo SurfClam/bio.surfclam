@@ -48,6 +48,7 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
 
   # length frequency data
   lf.data = GetLFData(update=update.data)
+  # save(lf.data,file=file.path( project.datadirectory("bio.surfclam"), "data", "lengthfreq.Rdata" ))
   
 
 
@@ -436,6 +437,13 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
 
   GrandTotalgrid.out = FisheryGridPlot(fisheryList,p,vms=T,fn='GrandTotalVMS',isobath=110,lg.place="topleft",ht=8,wd=6,outsideBorder=T,axes=F,xlab='',ylab='')#,aspr=1)
 
+
+  p$yrs= 2004:2016
+  GrandAnnGrid.out = FisheryGridPlot(fisheryList,p,vms=T,fn='annualVMS',isobath=110,lg.place="topleft",ht=8,wd=6,outsideBorder=T,axes=F,xlab='',ylab='')#,aspr=1)
+  write.csv(data.frame(Year=p$yrs,summarize.gridout(GrandAnnGrid.out)),file=file.path( project.datadirectory("bio.surfclam"), "R", "GrandSpatialExploitationSummary.csv"),row.names=F )
+
+  save(GrandAnnGrid.out,file=file.path( project.datadirectory("bio.surfclam"), "data", "GrandgriddedFisheryDataAnnual.Rdata" ))
+
   grandvmslogdata = assignLogData2VMS(fisheryList, p)
   grandvmslogdata = subset(grandvmslogdata,X>p$Min_lon&X<p$Max_lon&Y>p$Min_lat&Y<p$Max_lat)
 
@@ -457,11 +465,13 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
  
  # create a polygon from vms density as a proxy for clam habitat
   pdf(file.path( project.datadirectory("bio.surfclam"), "figures","VMSdensityGrand.pdf"),6,12)
-  GrandVMSden.poly = vmsDensity(grandvmslogdata,sig=0.2,res=0.1,lvl=20,lab="Grand")
+  GrandVMSden.poly = vmsDensity(grandvmslogdata,sig=0.2,res=0.1,lvl=20,lab="Grand",zone=22)
   dev.off()
 
  # plot of VMS data
   pdf(file.path( project.datadirectory("bio.surfclam"), "figures","VMSAreasGrand.pdf"),8,11)
-  ClamMap2('Grand',isobath=seq(50,500,50),bathy.source='bathy')
+  ClamMap2('Grand',isobath=seq(50,500,50))
   addPolys(GrandVMSden.poly,col=rgb(0,0,0,0.2))
   dev.off()
+
+
