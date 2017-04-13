@@ -15,7 +15,7 @@ ProcessVMSData <- function(vms.data,log.data){
   # Shift vmsdate with a duplicate within vrn by one second (duplicate record is moved one second forward)
   #vms.data$vmsdate <- adjust.duplicateTimes(vms.data$vmsdate, vms.data$vrn)
   # Create date and time variables in local time
-   vms.data$vmsdatelocal <- format(vms.data$vmsdate,format="%Y-%m-%d %H:%M:%S", tz="America/St_Johns",usetz=TRUE)
+  vms.data$vmsdatelocal <- format(vms.data$vmsdate,format="%Y-%m-%d %H:%M:%S", tz="America/St_Johns",usetz=TRUE)
   vms.data$date <- as.character(strptime(vms.data$vmsdatelocal,format="%Y-%m-%d"))
   vms.data$year <- year(vms.data$vmsdate)
   #vms.data$time <- as.POSIXct(vms.data$time,format="%H:%M:%S")

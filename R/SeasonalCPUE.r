@@ -33,7 +33,7 @@ SeasonalCPUE<-function(vmslogdata,yrs,subpolys,lab='',graphic='R',wd=8,ht=11,err
 	daily.dat<-merge(daily.dat,merge(dates,data.frame(AREA=areas)),all=T)
 	annual.dat<-do.call("rbind",annual)
 
-	if(graphic=='pdf')pdf(file.path( project.datadirectory("offshoreclams"),"figures",paste0("CPUE",lab,".pdf")),wd,ht)
+	if(graphic=='pdf')pdf(file.path( project.datadirectory("bio.surfclam"),"figures",paste0("CPUE",lab,".pdf")),wd,ht)
 
 	par(mfrow=c(length(areas),1),mar=c(0,0,0,0),omi=c(0.5,1,0.5,0.5),las=1)
 
