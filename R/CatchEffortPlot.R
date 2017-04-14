@@ -1,5 +1,5 @@
 #' @export
-CatchEffortPlot = function(CatchEffortData,yrs,graphic='R',col=rgb(0,1,0,0.8),ht=8,wd=6,path=file.path( project.datadirectory("offshoreclams"), "figures")){
+CatchEffortPlot = function(CatchEffortData,yrs,graphic='R',col=rgb(0,1,0,0.8),ht=8,wd=6,path=file.path( project.datadirectory("bio.surfclam"), "figures")){
 
   # CatchEffortPlots
   
@@ -21,7 +21,7 @@ CatchEffortPlot = function(CatchEffortData,yrs,graphic='R',col=rgb(0,1,0,0.8),ht
     axis(1, lab = F)
     mtext("Catch (kt)",2,3,las=0,cex=1.2)
    
-    legend('right',c("Banqureau","Grand Bank"),pch=16:17,col=c('black','grey50'),cex=1,bty='n')
+    legend('topleft',c("Banqureau","Grand Bank"),pch=16:17,col=c('black','grey50'),cex=1,bty='n')
     
     plot(yrs, d$Grand.Effort, type = 'b', lwd = 2, ylim = c(0, max(d$Ban.Effort,na.rm=T)), col='grey50', pch=17, ylab = "",cex.axis=1.2, xlab = "", xaxt='n')
     lines(yrs, d$Ban.Effort, type = 'b', lwd = 2,pch=16)

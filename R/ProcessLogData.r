@@ -7,6 +7,9 @@ ProcessLogData <- function(log.data){
   ## set up coordinates for Banquereau and Grand Bank
   ##############################################################################
   
+  log.data$VESSEL_NAME = toupper(log.data$VESSEL_NAME)
+
+
   data.names = names(log.data)[1:23]
 
   # dealing with duplicates
