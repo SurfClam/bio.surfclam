@@ -429,10 +429,16 @@ update.data=F # TRUE accesses data from database if on a DFO windows machine
 
     # phase plots
 
-    SPMPhaseplts(SPmodel1.out,ymax=2.2, graphic='R',vline=brefs,hline=frefs,vcol=c('yellow','red','green'))
+    SPMPhaseplts(SPmodel1.out,ymax=2.2, graphic='R',vline=brefs,hline=frefs,vcol=c('gold','red','green'))
+
+    Brefs = data.frame(cbind(do.call("rbind",lapply(as.list(refs$BMSY),'*',c(0.4,0.8))),70*SPMdata$Habitat/SPmodel1.out$median$q))
+    names(Brefs) = c("LRP", "USR", "cpue70")
 
 
+   # plot biomass 
+    SPMbiomass.plt(SPmodel1.out, yrs=yrs, CI=T,graphic='R',ht=8,wd=6,rows=5,alpha=c(0.5,0.05),name='SPM1',ymax=320,refs=Brefs/1000,refcol=c('red','gold','green'))
 
+  
 
 
 

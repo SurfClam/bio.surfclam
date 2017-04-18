@@ -25,6 +25,7 @@ SPMbiomass.plt <- function(model.out,yrs,name="", rows=3, CI=F,graphic='R',ymax,
     plot(yrs, (Bmed[1:length(yrs)]), type = 'l', lwd = 2, ylim = c(0, yl2),   ylab = "", las = 1, xlim = c(min(yrs)-1, max(yrs)+1), mgp = c(0.5, 0.5, 0), xlab = "", tcl = -  0.3, asp = 'xy', cex.axis=1.2,xaxt='n')
     axis(1, lab = F, tcl = -0.3)
     axis(4, lab = F, tcl = -0.3)
+    if(!is.null(refs))abline(h=refs[j,],col=refcol)
     if(CI){
       CIyrs=matrix(yrs,length(alpha),length(yrs),byrow=T)
       CIl=apply(Bposts, 2, quantile, alpha/2)
@@ -34,7 +35,7 @@ SPMbiomass.plt <- function(model.out,yrs,name="", rows=3, CI=F,graphic='R',ymax,
 	    lines(CIyrs[i,], CIu[i,], lty = i+1)
 	  }
     }
-    if(!is.null(refs))abline(h=refs[[j]],col=refcol)
+    lines(yrs, (Bmed[1:length(yrs)]), lwd = 2)
     text(yrs[length(yrs)]+1,yl2,j,pos=1,cex=1.5)
    
  
