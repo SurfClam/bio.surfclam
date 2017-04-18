@@ -24,6 +24,7 @@ RLibrary( "devtools","PBSmapping", "lubridate", "trip", "fields","spatstat","Tea
 
 # install bio.surfclam from local copy
 #install_git("C:/bio/bio.surfclam")
+#install_git("/home/hubleyb/bio/bio.surfclam")
 
 	RLibrary("bio.surfclam","bio.lobster","bio.utilities","bio.polygons","SpatialHub")#,"bio.spacetime","bio.temperature")
 
@@ -31,7 +32,7 @@ RLibrary( "devtools","PBSmapping", "lubridate", "trip", "fields","spatstat","Tea
 
 ## Load Data
 
-update.data=T # TRUE accesses data from database if on a DFO windows machine
+update.data=F # TRUE accesses data from database if on a DFO windows machine
 
 
   # log data
@@ -61,6 +62,7 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
 
   # New Areas
   new.areas  = read.csv(file.path( project.datadirectory("bio.surfclam"), "R","newareas.csv"))
+  VMSden.poly = read.csv(file.path( project.datadirectory("bio.surfclam"),'data',"VMSpolygons.csv"))
  
 
 ## parameters
@@ -294,12 +296,11 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
   CPUEdata=SeasonalCPUE(combineddata,yrs,new.areas,lab='',graphic='pdf',wd=10,ht=10,col=rgb(0,0,0,0.3),pch=16,cex=0.5)
   CPUEdata=SeasonalCPUE(combineddata,yrs,new.areas,lab='doc',graphic='pdf',wd=7,ht=10,col=rgb(0,0,0,0.3),pch=16,cex=0.5)
 
-
 ###### create area summary tables 
 
-  yrs = 2004:2016
-  Ban.C = with(subset(processed.log.data,bank==1&year%in%yrs),tapply(round_catch,year,sum,na.rm=T))
-  SPMdata = SPMsetup(combineddata,Totalgrid.out,VMSden.poly,new.areas,yrs=yrs,effort.min=100000,r=5,n.min=7)
+  tyrs = 2004:2016
+  Ban.C = with(subset(processed.log.data,bank==1&year%in%tyrs),tapply(round_catch,year,sum,na.rm=T))
+  SPMdata = SPMsetup(combineddata,Totalgrid.out,VMSden.poly,new.areas,yrs=tyrs,effort.min=100000,r=5,n.min=7)
   SPMdataList = SPMdata$SPMdataList
   bumpup = Ban.C/1000/rowSums(SPMdataList$C)
 
@@ -307,36 +308,44 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
 
   areaCatches = rbind(areaCatchesBU,colMeans(areaCatchesBU))
   areaCatches = cbind(areaCatches,rowSums(areaCatches))
-  dimnames(areaCatches)=list(c(yrs,"Mean"),c(paste("Area",1:5),"Total"))
+  dimnames(areaCatches)=list(c(tyrs,"Mean"),c(paste("Area",1:5),"Total"))
   write.csv(areaCatches,file.path( project.datadirectory("bio.surfclam"), "R","areaCatches.csv"))
 
   areaBiomass = SPMdataList$O
   areaBiomass = rbind(areaBiomass,colMeans(areaBiomass))
   areaBiomass = cbind(areaBiomass,rowSums(areaBiomass))
-  dimnames(areaBiomass)=list(c(yrs,"Mean"),c(paste("Area",1:5),"Total"))
+  dimnames(areaBiomass)=list(c(tyrs,"Mean"),c(paste("Area",1:5),"Total"))
   write.csv(areaBiomass,file.path( project.datadirectory("bio.surfclam"), "R","areaBiomass.csv"))
 
-  #fishedarea = SPMdata$Habitat
-  #keyf = findPolys(fishedarea,new.areas)
-  #keyt = findPolys(totalarea,new.areas)
-  #fishedarea = merge(fishedarea,keyf)
-  # with(fishedarea,tapply(Z,PID,sum))
-  #totalarea = merge(totalarea,keyt) 
+  TotalAreaDensity = read.csv(file.path( project.datadirectory("bio.surfclam"), "R","TotalAreaDensity2010.csv"))
+  FishedAreaDensity = subset(TotalAreaDensity,EID%in%findPolys(TotalAreaDensity,VMSden.poly)$EID)
 
-  #areaSummary = data.frame(totalareas,fished.area = SPMdata$Habitat, avg.annual.catch = colMeans(areaCatchesBU), total.catch.since.2004 = colSums(areaCatchesBU), biomass.survey.2010.total.area =with(#totalarea,tapply(Z,PID,sum)),biomass.survey.2010 =with(fishedarea,tapply(Z,PID,sum)), biomass.cpue.2010 =SPMdataList$O['2010',], biomass.cpue.2016 = SPMdataList$O['2016',])
-  #areaSummary = rbind(areaSummary,colSums(areaSummary))
-  #areaSummary$PID[6] = "Total"
-  #write.csv(areaSummary,file.path( project.datadirectory("bio.surfclam"), "R","areaSummary.csv"),row.names=F)
+
+  attr(new.areas,"projection")<-"LL"
+  totalareas = calcArea(new.areas) 
+  keyf = findPolys(FishedAreaDensity,new.areas)
+  keyt = findPolys(TotalAreaDensity,new.areas)
+  fishedarea = merge(FishedAreaDensity,keyf)
+   with(fishedarea,tapply(Z,PID,sum))
+  totalarea = merge(TotalAreaDensity,keyt) 
+
+  areaSummary = data.frame(totalareas,fished.area = SPMdata$Habitat, avg.annual.catch = colMeans(areaCatchesBU), total.catch.since.2004 = colSums(areaCatchesBU), biomass.survey.2010.total.area =with(totalarea,tapply(Z,PID,sum)),biomass.survey.2010 =with(fishedarea,tapply(Z,PID,sum)), biomass.cpue.2010 =SPMdataList$O['2010',], biomass.cpue.2016 = SPMdataList$O['2016',])
+  areaSummary = rbind(areaSummary,colSums(areaSummary))
+  areaSummary$PID[6] = "Total"
+  write.csv(areaSummary,file.path( project.datadirectory("bio.surfclam"), "R","areaSummary.csv"),row.names=F)
 
 
 ################ model run 1: 
 
+  yrs = 1988:2016
+  # Spatial Production Model Data
   SPMdata = SPMsetup(combineddata,Totalgrid.out,VMSden.poly,new.areas,yrs=yrs,effort.min=100000,r=5,n.min=7,cv=T,err='sd',cv.min=0.01)
+
   log(SPMdata$meanCV^2+1)*3
 
   #SPMdata = SPMsetup(combineddata,Totalgrid.out,VMSden.poly,CWzones,yrs=yrs,effort.min=100000,r=5,n.min=7)
   #SPMdata = SPMsetup(combineddata,Totalgrid.out,VMSden.poly,new.areas,yrs=yrs,effort.min=100000,r=5,n.min=7,cv=F)
-  SPMdataList = SPMdata$SPMdataList
+  SPMdataList = SPMdataList$SPMdataList
 
   SPMdataList$H = SPMdata$Habitat/mean(SPMdata$Habitat)
   #SPMdataList$CVW = 1/(SPMdataList$CV/SPMdata$meanCV)
@@ -414,8 +423,13 @@ update.data=T # TRUE accesses data from database if on a DFO windows machine
     # plot stocastic reference points
     refs=SPMRefpts(SPmodel1.out,col='grey', graphic='pdf')
 
+    frefs = list(c(0.026,0.05)/0.09,c(0.026,0.05)/0.09,c(0.026,0.05)/0.09,c(0.026,0.05)/0.09,c(0.026,0.05)/0.09)
+    cpueRef=70*SPMdata$Habitat/refs$BMSY
+    brefs = list(c(0.8,0.4,cpueRef[1]),c(0.8,0.4,cpueRef[2]),c(0.8,0.4,cpueRef[3]),c(0.8,0.4,cpueRef[4]),c(0.8,0.4,cpueRef[5]))
+
     # phase plots
-    SPMPhaseplts(SPmodel1.out,ymax=2.2, graphic='pdf')
+
+    SPMPhaseplts(SPmodel1.out,ymax=2.2, graphic='R',vline=brefs,hline=frefs,vcol=c('green','yellow','red'))
 
 
 
