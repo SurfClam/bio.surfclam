@@ -25,7 +25,7 @@ RLibrary( "devtools","PBSmapping", "lubridate", "trip", "fields","spatstat","Tea
 # install bio.surfclam from local copy
 #install_git("C:/bio/bio.surfclam")
 #install_git("/home/hubleyb/bio/bio.surfclam")
-
+  
 	RLibrary("bio.surfclam","bio.lobster","bio.utilities","bio.polygons","SpatialHub")#,"bio.spacetime","bio.temperature")
 
 
@@ -424,12 +424,12 @@ update.data=F # TRUE accesses data from database if on a DFO windows machine
     refs=SPMRefpts(SPmodel1.out,col='grey', graphic='pdf')
 
     frefs = list(c(0.026,0.05)/0.09,c(0.026,0.05)/0.09,c(0.026,0.05)/0.09,c(0.026,0.05)/0.09,c(0.026,0.05)/0.09)
-    cpueRef=70*SPMdata$Habitat/refs$BMSY
+    cpueRef=70*SPMdata$Habitat/refs$BMSY/SPmodel1.out$median$q
     brefs = list(c(0.8,0.4,cpueRef[1]),c(0.8,0.4,cpueRef[2]),c(0.8,0.4,cpueRef[3]),c(0.8,0.4,cpueRef[4]),c(0.8,0.4,cpueRef[5]))
 
     # phase plots
 
-    SPMPhaseplts(SPmodel1.out,ymax=2.2, graphic='R',vline=brefs,hline=frefs,vcol=c('green','yellow','red'))
+    SPMPhaseplts(SPmodel1.out,ymax=2.2, graphic='R',vline=brefs,hline=frefs,vcol=c('yellow','red','green'))
 
 
 

@@ -34,7 +34,7 @@ SPMbiomass.plt <- function(model.out,yrs,name="", rows=3, CI=F,graphic='R',ymax,
 	    lines(CIyrs[i,], CIu[i,], lty = i+1)
 	  }
     }
-    if(!is.null(refs))abline(h=refs[j],col=refcol)
+    if(!is.null(refs))abline(h=refs[[j]],col=refcol)
     text(yrs[length(yrs)]+1,yl2,j,pos=1,cex=1.5)
    
  

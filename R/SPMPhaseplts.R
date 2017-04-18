@@ -24,7 +24,7 @@ SPMPhaseplts = function(o,graphic="R",areas=1:5,nc=2,ht=7.5,wd=6,ymax=2.5,xmax=4
 		abline(h=1,lwd=3)
 		abline(v=1,lwd=3)
 		if(!is.null(hline))abline(h=hline[[i]],lty=2,col=hcol)
-		if(!is.null(vline))abline(h=vline[[i]],lty=2,col=vcol)
+		if(!is.null(vline))abline(v=vline[[i]],lty=2,col=vcol)
 		text(xmax*0.9,ymax*0.9,paste('Area',i,sep="-"))
 
 	}
