@@ -423,7 +423,7 @@ update.data=F # TRUE accesses data from database if on a DFO windows machine
     # plot stocastic reference points
     refs=SPMRefpts(SPmodel1.out,col='grey', graphic='pdf')
 
-    frefs = list(c(0.026,0.05)/0.09,c(0.026,0.05)/0.09,c(0.026,0.05)/0.09,c(0.026,0.05)/0.09,c(0.026,0.05)/0.09)
+    frefs = list(c(0.026,0.045)/0.09,c(0.026,0.045)/0.09,c(0.026,0.045)/0.09,c(0.026,0.045)/0.09,c(0.026,0.045)/0.09)
     cpueRef=70*SPMdata$Habitat/refs$BMSY/SPmodel1.out$median$q
     brefs = list(c(0.8,0.4,cpueRef[1]),c(0.8,0.4,cpueRef[2]),c(0.8,0.4,cpueRef[3]),c(0.8,0.4,cpueRef[4]),c(0.8,0.4,cpueRef[5]))
 
@@ -438,10 +438,33 @@ update.data=F # TRUE accesses data from database if on a DFO windows machine
    # plot biomass 
     SPMbiomass.plt(SPmodel1.out, yrs=yrs, CI=T,graphic='R',ht=8,wd=6,rows=5,alpha=c(0.5,0.05),name='SPM1',ymax=320,refs=Brefs/1000,refcol=c('red','gold','green'))
 
+    Blist=list()
+    for(j in 1:5){
+        Bposts = sweep(SPmodel1.out$sims.list$P[,,j],1,FUN='*',SPmodel1.out$sims.list$K[,j]/1000)
+
+      Blist[[j]] =  quantile(Bposts[,29],  c(0.025,0.5,0.975))
+    }
+    Biomass2016 = data.frame(do.call("rbind",Blist))
+    Biomass2016 = rbind(Biomass2016,colSums(Biomass2016))
+
+    Emed = list()
+    for(j in 1:5){
+
+    C=model.out$data$C[,j]
+    Emed[[j]] = C/(model.out$median$P[,j]*model.out$median$K[j])
+  }
+    Emed = data.frame(do.call("rbind",Emed))
+
+  png(filename=file.path( project.datadirectory("bio.surfclam"), "figures","TACs.png"), width=7, height=6, units="in", res=300)
   
-
-
-
+  tBiomass=rowSums(Biomass[,-1])
+  plot(yrs,tBiomass*(1-exp(-0.045)),type='l',ylim=c(0,65000),col='gold',lwd=2,xlim=c(1999,2016),ylab="TAC (t)",xlab='')
+  lines(yrs,tBiomass*(1-exp(-0.026)),col='green',lwd=2)
+  lines(yrs,tBiomass*(1-exp(-0.09)),col='red',lwd=2)
+  abline(h=24000)
+  abline(h=50000,lty=3)
+  legend('topleft', c("High (Fmsy)", "Medium (0.5Fmsy)", "Low (0.33M)"),title="Risk",lty=1,col=c('red','gold','green'),bg='white')
+  dev.off()
 
 ################################ GRand Bank ################################
 
