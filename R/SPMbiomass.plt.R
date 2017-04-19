@@ -5,6 +5,8 @@ SPMbiomass.plt <- function(model.out,yrs,name="", rows=3, CI=F,graphic='R',ymax,
   
   
   if(graphic=='pdf')pdf(file.path(path,paste(name, "biomass.pdf", sep="")),height=ht,width=wd)
+  if(graphic=='png')png(filename=file.path(path,paste(name, "biomass.pdf", sep="")), width=wd, height=ht, units="in", res=300)
+
   if(graphic=="R")x11(ht,wd)
   
   if(missing(yrs))yrs = 1:model.out$data$NY
