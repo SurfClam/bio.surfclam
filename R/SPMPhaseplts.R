@@ -7,7 +7,7 @@ SPMPhaseplts = function(o,graphic="R",areas=1:5,nc=2,ht=7.5,wd=6,ymax=2.5,xmax=4
 	o$median$F = -log(1-o$data$C / o$median$B)
 
 	if(graphic=='pdf')pdf(file.path( project.datadirectory("bio.surfclam"),"figures",'PhasePlots.pdf'),height=ht,width=wd)
-  	if(graphic=='png')png(filename=file.path( project.datadirectory("bio.surfclam"),"figures",'PhasePlots.pdf'), width=wd, height=ht, units="in", res=300)
+  	if(graphic=='png')png(filename=file.path( project.datadirectory("bio.surfclam"),"figures",'PhasePlots.png'), width=wd, height=ht, units="in", res=300)
  	if(graphic=='R')x11(height=ht,width=wd)
 	par(mfrow=c(ceiling(length(areas)/nc),nc), mar = c(0, 0, 0, 0), omi = c(1, 1, 0.3, 0.3),las=1)
 

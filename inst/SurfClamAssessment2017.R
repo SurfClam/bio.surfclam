@@ -24,6 +24,7 @@ RLibrary( "devtools","PBSmapping", "lubridate", "trip", "fields","spatstat","Tea
 
 # install bio.surfclam from local copy
 #install_git("C:/bio/bio.surfclam")
+#load_all("C:/bio/bio.surfclam")
 #install_git("/home/hubleyb/bio/bio.surfclam")
   
 	RLibrary("bio.surfclam","bio.lobster","bio.utilities","bio.polygons","SpatialHub")#,"bio.spacetime","bio.temperature")
@@ -112,6 +113,9 @@ update.data=F # TRUE accesses data from database if on a DFO windows machine
   with(subset(processed.log.data,year==2013&area>0),points(lon_dd,lat_dd,pch=16,cex=0.5,col=rgb(0,0,1,0.2)))
   with(surveyList$surveyData,points(slon,slat,pch=16,cex=0.2,col=rgb(0,1,0,0.2)))
 
+  ClamMap2('Ban',isobath=seq(50,500,50),bathcol='grey',bathy.source='bathy')
+  addPolys(new.areas)
+  addLabels(data.frame(PID=1:5,label=1:5),polys=new.areas,placement="CENTROID",cex=2,font=2)
 
   # VMS Data
   pdf(file.path( project.datadirectory("bio.surfclam"), "figures","FishingLocations.pdf"),11,8)
@@ -136,7 +140,7 @@ update.data=F # TRUE accesses data from database if on a DFO windows machine
   with(fisheryList$vms.data,points(lon,lat,pch=16,cex=0.2,col=rgb(0,0,0,.1)))
   dev.off()
 
-###CPUE data
+###CPUE data 
 
   # explore distribution of catch and effort data in order to set appropriate bounds to censor the data
   pdf(file.path( project.datadirectory("bio.surfclam"), "figures","CatchEffortDist.pdf"),8,8)
@@ -271,10 +275,11 @@ update.data=F # TRUE accesses data from database if on a DFO windows machine
   lvls=c(10,15,20,25,30,35,40,45,50)
   fishedarea=c()
   for(i in 1:length(lvls)){
-   pdf(file.path( project.datadirectory("bio.surfclam"), "figures",paste0("VMSdensity",lvls[i],".pdf")),12,6)
+   #pdf(file.path( project.datadirectory("bio.surfclam"), "figures",paste0("VMSdensity",lvls[i],".pdf")),12,6)
    VMStmp.poly = vmsDensity(vmslogdata,sig=0.2,res=0.1,lvl=lvls[i])
+   attr(VMStmp.poly,'projection')="LL"
     fishedarea[i] = calcArea(VMStmp.poly,1)$area
-  dev.off()
+  #dev.off()
   }
 
 
@@ -295,6 +300,7 @@ update.data=F # TRUE accesses data from database if on a DFO windows machine
   # plot of CPUE data
   CPUEdata=SeasonalCPUE(combineddata,yrs,new.areas,lab='',graphic='pdf',wd=10,ht=10,col=rgb(0,0,0,0.3),pch=16,cex=0.5)
   CPUEdata=SeasonalCPUE(combineddata,yrs,new.areas,lab='doc',graphic='pdf',wd=7,ht=10,col=rgb(0,0,0,0.3),pch=16,cex=0.5)
+  CPUEdata=SeasonalCPUE(combineddata,yrs,new.areas,lab='NoDaily',graphic='R',wd=7,ht=10,col=rgb(0,0,0,0.3),pch=16,cex=0.5,type='n')
 
 ###### create area summary tables 
 
@@ -429,14 +435,14 @@ update.data=F # TRUE accesses data from database if on a DFO windows machine
 
     # phase plots
 
-    SPMPhaseplts(SPmodel1.out,ymax=2.2, graphic='R',vline=brefs,hline=frefs,vcol=c('gold','red','green'))
+    SPMPhaseplts(SPmodel1.out,ymax=2.2, graphic='png',vline=brefs,hline=frefs,vcol=c('gold','red','green'))
 
     Brefs = data.frame(cbind(do.call("rbind",lapply(as.list(refs$BMSY),'*',c(0.4,0.8))),70*SPMdata$Habitat/SPmodel1.out$median$q))
     names(Brefs) = c("LRP", "USR", "cpue70")
 
 
    # plot biomass 
-    SPMbiomass.plt(SPmodel1.out, yrs=yrs, CI=T,graphic='R',ht=8,wd=6,rows=5,alpha=c(0.5,0.05),name='SPM1',ymax=320,refs=Brefs/1000,refcol=c('red','gold','green'))
+    SPMbiomass.plt(SPmodel1.out, yrs=yrs, CI=T,graphic='png',ht=8,wd=6,rows=5,alpha=c(0.5,0.05),name='SPM1',ymax=320,refs=Brefs/1000,refcol=c('red','gold','green'))
 
     Blist=list()
     for(j in 1:5){
@@ -486,6 +492,7 @@ update.data=F # TRUE accesses data from database if on a DFO windows machine
   write.csv(data.frame(Year=p$yrs,summarize.gridout(GrandAnnGrid.out)),file=file.path( project.datadirectory("bio.surfclam"), "R", "GrandSpatialExploitationSummary.csv"),row.names=F )
 
   save(GrandAnnGrid.out,file=file.path( project.datadirectory("bio.surfclam"), "data", "GrandgriddedFisheryDataAnnual.Rdata" ))
+  load(file=file.path( project.datadirectory("bio.surfclam"), "data", "GrandgriddedFisheryDataAnnual.Rdata" ))
 
   grandvmslogdata = assignLogData2VMS(fisheryList, p)
   grandvmslogdata = subset(grandvmslogdata,X>p$Min_lon&X<p$Max_lon&Y>p$Min_lat&Y<p$Max_lat)
