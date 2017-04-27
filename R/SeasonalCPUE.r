@@ -33,7 +33,8 @@ SeasonalCPUE<-function(vmslogdata,yrs,subpolys,lab='',graphic='R',wd=8,ht=11,err
 	daily.dat<-merge(daily.dat,merge(dates,data.frame(AREA=areas)),all=T)
 	annual.dat<-do.call("rbind",annual)
 
-	if(graphic=='pdf')pdf(file.path( project.datadirectory("bio.surfclam"),"figures",paste0("CPUE",lab,".pdf")),wd,ht)
+	if(graphic=='pdf')pdf(file.path( project.datadirectory("bio.surfclam"),"figures",paste0("CPUE",lab,".pdf")), width=wd, height=ht)
+	if(graphic=='png')pdf(file.path( project.datadirectory("bio.surfclam"),"figures",paste0("CPUE",lab,".png")), width=wd, height=ht, units="in", res=300)
 
 	par(mfrow=c(length(areas),1),mar=c(0,0,0,0),omi=c(0.5,1,0.5,0.5),las=1)
 
@@ -46,7 +47,7 @@ SeasonalCPUE<-function(vmslogdata,yrs,subpolys,lab='',graphic='R',wd=8,ht=11,err
 	}
 	mtext(expression(CPUE(t/km^2)), 2, 3, outer = T, cex = 1.5,las=0)	
 
-	if(graphic=='pdf')dev.off()
+	if(graphic!='R')dev.off()
 
 	return(list(Daily=daily.dat,Annual=annual.dat))
 }

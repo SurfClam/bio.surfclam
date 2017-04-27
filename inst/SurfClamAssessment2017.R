@@ -12,8 +12,13 @@
 
 #install_github("Beothuk/bio.base")
 #require(bio.base)
+#homedir = file.path( "C:" )  # mapping to root dir
+#bio.workdirectory = file.path( homedir, "tmp" )      ### replace with correct path
+#bio.directory = file.path( homedir, "bio" )   ### replace with correct path
+#bio.datadirectory = file.path( homedir, "bio.data" )   ### replace with correct path
 
-RLibrary( "devtools","PBSmapping", "lubridate", "trip", "fields","spatstat","TeachingDemos","gstat","CircStats","splancs","RODBC") # Load required packages
+
+RLibrary( "devtools","PBSmapping", "lubridate", "trip", "fields","spatstat","TeachingDemos","gstat","CircStats","splancs","RODBC","RColorBrewer") # Load required packages
 
 # install bio.packages from GitHub
 #install_github("Beothuk/bio.base")
@@ -239,6 +244,8 @@ update.data=F # TRUE accesses data from database if on a DFO windows machine
 
   # create a polygon from vms density as a proxy for clam habitat
   pdf(file.path( project.datadirectory("bio.surfclam"), "figures","VMSdensity.pdf"),12,6)
+  png(filename=file.path( project.datadirectory("bio.surfclam"),"figures",'VMSdensity.png'), 12,6, units="in", res=300)
+
   VMSden.poly = vmsDensity(vmslogdata,sig=0.2,res=0.1,lvl=30)
   dev.off()
 
@@ -344,6 +351,7 @@ update.data=F # TRUE accesses data from database if on a DFO windows machine
 ################ model run 1: 
 
   yrs = 1988:2016
+  SPMdataList$yrs = yrs  
   # Spatial Production Model Data
   SPMdata = SPMsetup(combineddata,Totalgrid.out,VMSden.poly,new.areas,yrs=yrs,effort.min=100000,r=5,n.min=7,cv=T,err='sd',cv.min=0.01)
 
@@ -435,7 +443,7 @@ update.data=F # TRUE accesses data from database if on a DFO windows machine
 
     # phase plots
 
-    SPMPhaseplts(SPmodel1.out,ymax=2.2, graphic='png',vline=brefs,hline=frefs,vcol=c('gold','red','green'))
+    SPMPhaseplts(SPmodel1.out,ymax=2.2, graphic='R',vline=brefs,hline=frefs,vcol=c('gold','red','green'))
 
     Brefs = data.frame(cbind(do.call("rbind",lapply(as.list(refs$BMSY),'*',c(0.4,0.8))),70*SPMdata$Habitat/SPmodel1.out$median$q))
     names(Brefs) = c("LRP", "USR", "cpue70")

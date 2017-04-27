@@ -17,9 +17,10 @@ vmsDensity = function(vmslogdata,sig=0.1,res=0.25,lvl=30,lab='',zone=21){
   #plot(density(vmsDensity,0.001))
 
   x = density(vmsDensity,sig)
-  browser()
-  plot(x,main=paste("VMS Density, sig=",sig,"res=",res,"lvl=",lvl))
-  contour(x,levels=lvl,drawlabels=F,add=T)
+  px = x
+  px$v[px$v<lvl] = NA
+  plot(px,main=paste("VMS Density, sig=",sig,"res=",res,"lvl=",lvl))
+  #contour(x,levels=lvl,drawlabels=F,add=T)
  
   x.lst = list(x=seq(x$xrange[1]+x$xstep/2,x$xrange[2],x$xstep),y=seq(x$yrange[1]+x$ystep/2,x$yrange[2],x$ystep),z=t(x$v))
   save(x.lst,file=file.path( project.datadirectory("bio.surfclam"),'data',paste0(lab,'VMSdensity.rdata')))
