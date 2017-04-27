@@ -9,49 +9,78 @@
 #' @rdname PlotLengthFreq
 #' @import ggplot2
 #' @importFrom dplyr ungroup mutate filter summarise
+#' @importFrom lubridate year
 #' @importFrom data.table data.table
+#' @author Ryan Stanley
 #' @export
 
 
-PlotLengthFreq=function(lfdata,SelBank,stat="cdf") {
+PlotLengthFreq=function(lfdata,SelBank,stat="lf",bw=5) {
+
+  names(lfdata) <- toupper(names(lfdata))
+
+  lfdata$date <- strftime(lfdata$SAMPLE_DATE,format="%Y-%m-%d",tz="America/Halifax")
+  lfdata$year <- year(lfdata$date)
 
   #Manipulate data for plotting
   expandlf <- data.table::data.table(lfdata)
   expandlf <- data.frame(expandlf[rep(seq(1,nrow(expandlf)),expandlf$NUM)])
 
 #Plotting parameters and data filtering
-  if(SelBank==2){sizeThresh=105
-  expandlf <- dplyr::filter(expandlf,AREA==3,SHELL_LEN<=200)}
+  #SQL query notes BB as 4 and GB as 3 which is different than the other functions. The following will account for this
+  if(sum(c(lfdata$AREA==3,lfdata$AREA==4),na.rm=T)>0.6*sum(is.na(lfdata$AREA))&SelBank>2){
+    expandlf <- filter(expandlf,AREA==SelBank)}
 
-  if(SelBank==1){sizeThresh=120
-  expandlf <- dplyr::filter(expandlf,AREA==4,SHELL_LEN<=200)}
+  if(sum(c(lfdata$AREA==3,lfdata$AREA==4),na.rm=T)>0.6*sum(is.na(lfdata$AREA))&SelBank<3){
+    if(SelBank==1){SelBank <- 4}else{SelBank <- 3}
+    expandlf <- filter(expandlf,AREA==SelBank)}
+
+  if(sum(c(lfdata$AREA==1,lfdata$AREA==2),na.rm=T)>0.6*sum(is.na(lfdata$AREA))&SelBank<3){
+    expandlf <- filter(expandlf,AREA==SelBank)}
+
+  if(sum(c(lfdata$AREA==1,lfdata$AREA==2),na.rm=T)>0.6*sum(is.na(lfdata$AREA))&SelBank>2){
+    if(SelBank==3){SelBank <- 2}else{SelBank <- 1}
+    expandlf <- filter(expandlf,AREA==SelBank)}
+
+
+  if(SelBank==2|SelBank==3){sizeThresh=105}
+  if(SelBank==1|SelBank==4){sizeThresh=120}
+
+  expandlf <- dplyr::filter(expandlf,RLENGTH<=200)
 
 #Plot limits
-  MaxLimit <- floor(lfdata%>%group_by(YEAR)%>%
-                    mutate(prec=NUM/sum(NUM)*100)%>%
+  MaxLimit <- lfdata%>%group_by(year)%>%
+                    mutate(prec=NUMBER_AT_LENGTH/sum(NUMBER_AT_LENGTH)*100)%>%
                     ungroup()%>%
-                    summarise(Max=max(prec,na.rm=T))%>%as.integer())
+                    summarise(Max=max(prec,na.rm=T))%>%as.numeric
 
   #Numbers of clams in each year
-  Numbers <- expandlf%>%group_by(YEAR)%>%
-              summarise(num=length(NUM))%>%ungroup()%>%data.frame()
+  Numbers <- expandlf%>%group_by(year)%>%
+              summarise(num=length(NUMBER_AT_LENGTH))%>%ungroup()%>%data.frame()
+
+  HistFun <- function(x){return(max(hist(x,bw=bw,plot=FALSE)$density*100,na.rm=T))}
+
+  #Find cieling for the plotting functions
+  MaxLimit <- plyr::round_any(x=expandlf%>%group_by(year)%>%
+                                summarise(Max=HistFun(RLENGTH))%>%
+                                ungroup()%>%summarise(Max=max(Max,na.rm=T))%>%as.numeric,0.5)
+
 
 #Plots
   if(stat=="lf"){
 
     #Text locations
-    Numbers$x=20;Numbers$y=MaxLimit-1.5
+    Numbers$x=20;Numbers$y=MaxLimit/2
 
-    print(
-      ggplot()+
-    geom_density(data=expandlf,aes(x=SHELL_LEN,y=..density..*100),lty=2)+
+    return(ggplot()+
+    geom_density(data=expandlf,aes(x=RLENGTH,y=..density..*100),bw=bw,lty=2)+
     geom_text(data=Numbers,aes(x=x,y=y,label=paste0("n=",num)))+
-    facet_grid(YEAR~.)+
+    facet_grid(year~.)+
     geom_vline(xintercept=sizeThresh)+
     theme_bw()+
     labs(x="Shell length (mm)",y="Frequency (%)" )+
-    scale_y_continuous(breaks=c(0,(MaxLimit-1)/2,MaxLimit-1),
-                       labels=c("0","",as.character(MaxLimit-1)))+
+     scale_y_continuous(breaks=c(0,round(MaxLimit)/2,round(MaxLimit)),
+                         labels=c("0","",as.character(round(MaxLimit))))+
       theme(strip.background = element_rect(colour = "black", fill = "white")))
     }
 
@@ -61,10 +90,10 @@ PlotLengthFreq=function(lfdata,SelBank,stat="cdf") {
     Numbers$x=20;Numbers$y=0.8
 
   print(ggplot()+
-    stat_ecdf(data=expandlf,aes(x=SHELL_LEN))+
+    stat_ecdf(data=expandlf,aes(x=RLENGTH))+
     geom_text(data=Numbers,aes(x=x,y=y,label=paste0("n=",num)))+
-    facet_wrap(~YEAR,ncol=3,scales="free_y")+
-    geom_vline(xintercept=sizeThresh)+
+    facet_wrap(~year,ncol=3,scales="free_y")+
+    geom_vline(xintercept=sizeThresh,lty=2)+
     theme_bw()+
     labs(x="Shell length (mm)",y="Cumlative frequency (%)" )+
       theme(strip.background = element_rect(colour = "black", fill = "white")))

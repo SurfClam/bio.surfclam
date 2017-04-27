@@ -1,6 +1,6 @@
 # Catch per unit effort plot.
 #' @title Plot the annual CPUE and associated trigger level.
-#' @description Function to subset loci and populations
+#' @description CPUE plot
 #' @param logdata is the processed log data from the functions GetLogData() and ProcessLogData().
 #' @param SelBank a numeric delimiter of the assessment region (1 = Banquereau and 2 = Grand Bank).
 #' @param stat variable (default="mean") defining whether the plot returned should have all the ship specific means (stat="all")
@@ -13,19 +13,29 @@
 #' @import ggplot2
 #' @importFrom lubridate year
 #' @importFrom dplyr summarise mutate ungroup filter
+#' @author Ryan Stanley
 #' @export
 
-CpuePlot <- function(logdata, SelBank,stat="mean",returnData=FALSE,anon=FALSE){
+CpuePlot <- function(logdata, SelBank,stat=NA,returnData=FALSE,anon=FALSE,dodge=0.5,verbose=TRUE){
+
+  names(logdata) <- toupper(names(logdata)) # make sure the column names are upper case
+
+  if(is.na(stat)){stop("Stat must be set to 'means' (the mean of all vessels) or 'all' (showing vessel information)")}
+
+  if(max(logdata$YEAR,na.rm=T)>2015 & verbose) {
+    print("Note this function has been hard coded to return information on the last four vessels in the fleet (Atlantic Vigour, Atlantic Pursuit, Ocean Concord, Belle Carnell and Arctic Endurance (CFVs: 101277, 101276, 133542, 176085, respectively)) as of 2015. Please update function if new vessels enter the fleet.")}
+
+  if(verbose & stat=="all" & anon){print("Note vessel specific information will not be returned when anon == TRUE")}
 
   #CPUE trigger
-  if(SelBank==1){trigger=75}
+  if(SelBank==1){trigger=70}
   if(SelBank==2){trigger=50}
 
-  ## matrix of info for last four vessles active in fleet (Note this is hard coded)
-  PlotParameters<- data.frame(CFV=c(101277, 101276, 133542, 176085, 000000),
+  ## matrix of info for last five vessles active in fleet (Note this is hard coded)
+  PlotParameters<- data.frame(CFV=c(101277, 101276, 133542, 176085,140013, 000000),
                               VN=c("Atlantic Vigour", "Atlantic Pursuit", "Ocean Concord",
-                                   "Arctic Endurance", "Fleet average"),
-                              Col=c("red", "blue", "green", "orange", "black"),stringsAsFactors = F)
+                                   "Arctic Endurance","Belle Carnell", "Fleet average"),
+                              Col=c("red", "blue", "green", "orange","grey50", "black"),stringsAsFactors = F)
 
   ## Data for last 4 vessels
   PlotSub <-  dplyr::filter(logdata,CFV %in% PlotParameters$CFV,BANK == SelBank)%>%
@@ -62,36 +72,44 @@ CpuePlot <- function(logdata, SelBank,stat="mean",returnData=FALSE,anon=FALSE){
   PlotAgg$VN <- factor(PlotAgg$VN,levels=PlotParameters$VN)
 
   #Plot parameters
-  dodge <- position_dodge(.2)
+  dodge <- position_dodge(.5)
 
   #Plot - all non-anonymous
   if(stat=="all" & !returnData & !anon){
-    print(ggplot()+
-            geom_point(data=PlotSub,aes(x=Year,y=CPUE,col=VN),position=dodge)+
-            geom_line(data=PlotAgg[PlotAgg$VN=="Fleet average",],aes(x=Year,y=CPUE,col=VN))+
-            geom_hline(yintercept=trigger,lty=2)+
-            theme_bw()+theme(legend.position="bottom")+
-            labs(x="",y=expression(paste("CPUE ",g/m^2,sep="")),col="")+
-            scale_colour_manual(values = PlotParameters$Col))
+    return(ggplot()+
+             geom_point(data=PlotSub,aes(x=Year,y=CPUE,col=VN),position=dodge,size=1.5)+geom_jitter()+
+             geom_line(data=PlotAgg,aes(x=Year,y=CPUE,col=VN),lwd=0.5)+ # if you want the vessel line averages in (not really )
+             geom_line(data=PlotAgg[PlotAgg$VN=="Fleet average",],aes(x=Year,y=CPUE,col=VN),lwd=1.25)+
+             geom_hline(yintercept=trigger,lty=2)+
+             theme_bw()+
+             theme(legend.position="bottom",axis.text.x=element_text(angle = 45,hjust=1),
+                   panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+             guides(col=guide_legend(nrow=2,byrow=TRUE))+
+             labs(x="",y=expression(paste("CPUE ",g/m^2,sep="")),col="")+
+             scale_colour_manual(values = PlotParameters$Col)+
+             scale_x_continuous(breaks=seq(min(PlotAgg$Year,na.rm=T),
+                                           max(PlotAgg$Year,na.rm=T),2)))
   }
 
   if(stat=="means" & !returnData & !anon){
 
-    print(ggplot()+
-            geom_line(data=PlotAgg[PlotAgg$VN=="Fleet average",],
-                      aes(x=Year,y=CPUE),lty=1,lwd=1.1)+
-            geom_errorbar(data=PlotAgg[PlotAgg$VN!="Fleet average",],
-                          aes(x=Year,y=CPUE,col=VN,ymin=CPUE-se,ymax=CPUE+se),
-                          width=0.2,position = dodge)+
-            geom_point(data=PlotAgg[PlotAgg$VN!="Fleet average",],aes(x=Year,y=CPUE,col=VN),
-                       position = dodge,size=1.85)+
-            geom_hline(aes(yintercept=trigger),lty=2)+
-            theme_bw()+
-            labs(x="",y=expression(paste("CPUE ",g/m^2 %+-% " se",sep="")),col="")+
-            scale_colour_brewer(palette = "Set1")+
-            theme(legend.position="bottom",axis.text.x=element_text(angle = 45,hjust=1))+
-            scale_x_continuous(breaks=seq(min(PlotAgg$Year,na.rm=T),
-                                          max(PlotAgg$Year,na.rm=T),3)))
+    return(ggplot()+
+             geom_line(data=PlotAgg[PlotAgg$VN=="Fleet average",],
+                       aes(x=Year,y=CPUE),lty=1,lwd=1.25)+
+             geom_errorbar(data=PlotAgg[PlotAgg$VN!="Fleet average",],
+                           aes(x=Year,y=CPUE,col=VN,ymin=CPUE-se,ymax=CPUE+se),
+                           width=0.2,position = dodge)+
+             geom_point(data=PlotAgg[PlotAgg$VN!="Fleet average",],aes(x=Year,y=CPUE,col=VN),
+                        position = dodge,size=1.85)+
+             geom_hline(aes(yintercept=trigger),lty=2)+
+             theme_bw()+
+             labs(x="",y=expression(paste("CPUE ",g/m^2 %+-% " se",sep="")),col="")+
+             scale_colour_brewer(palette = "Set1")+
+             theme(legend.position="bottom",axis.text.x=element_text(angle = 45,hjust=1),
+                   panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+             guides(col=guide_legend(nrow=2,byrow=TRUE))+
+             scale_x_continuous(breaks=seq(min(PlotAgg$Year,na.rm=T),
+                                           max(PlotAgg$Year,na.rm=T),2)))
 
   }
 
@@ -103,23 +121,25 @@ CpuePlot <- function(logdata, SelBank,stat="mean",returnData=FALSE,anon=FALSE){
 
   if(!returnData & anon){
 
-    print(ggplot()+
-            geom_line(data=PlotAgg[PlotAgg$VN=="Fleet average",],
-                      aes(x=Year,y=CPUE),lty=1,lwd=0.6)+
-            geom_errorbar(data=PlotAgg[PlotAgg$VN=="Fleet average",],
-                          aes(x=Year,y=CPUE,ymin=CPUE-se,ymax=CPUE+se),
-                          width=0.2,position = dodge)+
-            geom_point(data=PlotAgg[PlotAgg$VN=="Fleet average",],
-                       aes(x=Year,y=CPUE),
-                       position = dodge,size=1.85)+
-            geom_hline(aes(yintercept=trigger),lty=2)+
-            theme_bw()+
-            labs(x="",y=expression(paste("CPUE ",g/m^2 %+-% " se",sep="")),col="")+
-            scale_colour_brewer(palette = "Set1")+
-            theme(legend.position="none",
-                  axis.text.x=element_text(angle = 45,hjust=1))+
-            scale_x_continuous(breaks=seq(min(PlotAgg$Year,na.rm=T),
-                                          max(PlotAgg$Year,na.rm=T),3)))
+    return(ggplot()+
+             geom_line(data=PlotAgg[PlotAgg$VN=="Fleet average",],
+                       aes(x=Year,y=CPUE),lty=1,lwd=0.6)+
+             geom_errorbar(data=PlotAgg[PlotAgg$VN=="Fleet average",],
+                           aes(x=Year,y=CPUE,ymin=CPUE-se,ymax=CPUE+se),
+                           width=0.2,position = dodge)+
+             geom_point(data=PlotAgg[PlotAgg$VN=="Fleet average",],
+                        aes(x=Year,y=CPUE),
+                        position = dodge,size=1.85)+
+             geom_hline(aes(yintercept=trigger),lty=2)+
+             theme_bw()+
+             labs(x="",y=expression(paste("CPUE ",g/m^2 %+-% " se",sep="")),col="")+
+             scale_colour_brewer(palette = "Set1")+
+             theme(legend.position="none",
+                   axis.text.x=element_text(angle = 45,hjust=1),
+                   panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+             guides(col=guide_legend(nrow=2,byrow=TRUE))+
+             scale_x_continuous(breaks=seq(min(PlotAgg$Year,na.rm=T),
+                                           max(PlotAgg$Year,na.rm=T),2)))
 
   }
 
@@ -129,3 +149,4 @@ CpuePlot <- function(logdata, SelBank,stat="mean",returnData=FALSE,anon=FALSE){
                               c("CFV","Year","CPUE","sd","se")]))}
 
 }
+
