@@ -4,7 +4,7 @@
 \alias{OMSfished}
 \title{Plot the fishing effort as a function of one minute squared 'cells' fished annually.}
 \usage{
-OMSfished(logdata, SelBank)
+OMSfished(logdata, SelBank = NA, returnData = FALSE)
 }
 \arguments{
 \item{logdata}{is the processed log data from the functions GetLogData() and ProcessLogData().}
@@ -13,5 +13,8 @@ OMSfished(logdata, SelBank)
 }
 \description{
 Function to subset loci and populations
+}
+\author{
+Brad Hubley and Ryan Stanley
 }
 

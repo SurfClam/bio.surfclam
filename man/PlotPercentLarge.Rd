@@ -4,13 +4,14 @@
 \alias{PlotPercentLarge}
 \title{Plot the number and percent of large clams in a sample per year with associated trigger levels.}
 \usage{
-PlotPercentLarge(lfdata, SelBank, buffer = 3, plot_loess = FALSE)
+PlotPercentLarge(lfdata, SelBank, buffer = 3, plot_loess = FALSE,
+  returnData = FALSE)
 }
 \arguments{
 \item{lfdata}{is the length frequency data from the database. Columns should include AREA (3 for Grand Bank and 4 for Banquereau)
 YEAR, SHELL_LEN (length in mm) and NUM (frequency of this measurement in a given year).}
 
-\item{SelBank}{a numeric delimiter of the assessment region (1 = Banquereau and 2 = Grand Bank).}
+\item{SelBank}{a numeric delimiter of the assessment region (1 = Banquereau and 2 = Grand Bank). This can also correspond to the 'bank' variable in lfdata.}
 
 \item{buffer}{an integer which defines the number of percentage points above the maximum percent of large clams
 in a given year to be added to the plot limits.}
@@ -19,5 +20,8 @@ in a given year to be added to the plot limits.}
 }
 \description{
 Function to subset loci and populations
+}
+\author{
+Ryan Stanley
 }
 
