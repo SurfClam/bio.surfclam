@@ -307,7 +307,7 @@ update.data=F # TRUE accesses data from database if on a DFO windows machine
   # plot of CPUE data
   CPUEdata=SeasonalCPUE(combineddata,yrs,new.areas,lab='',graphic='pdf',wd=10,ht=10,col=rgb(0,0,0,0.3),pch=16,cex=0.5)
   CPUEdata=SeasonalCPUE(combineddata,yrs,new.areas,lab='doc',graphic='pdf',wd=7,ht=10,col=rgb(0,0,0,0.3),pch=16,cex=0.5)
-  CPUEdata=SeasonalCPUE(combineddata,yrs,new.areas,lab='NoDaily',graphic='R',wd=7,ht=10,col=rgb(0,0,0,0.3),pch=16,cex=0.5,type='n')
+  CPUEdata=SeasonalCPUE(combineddata,yrs,new.areas,lab='NoDaily',graphic='png',wd=7,ht=10,col=rgb(0,0,0,0.3),pch=16,cex=0.5,type='n')
 
 ###### create area summary tables 
 
@@ -443,14 +443,15 @@ update.data=F # TRUE accesses data from database if on a DFO windows machine
 
     # phase plots
 
-    SPMPhaseplts(SPmodel1.out,ymax=2.2, graphic='R',vline=brefs,hline=frefs,vcol=c('gold','red','green'))
+    SPMPhaseplts(SPmodel1.out,ymax=2.2, graphic='png',vline=brefs,hline=frefs,vcol=c('gold','red','green'))
 
     Brefs = data.frame(cbind(do.call("rbind",lapply(as.list(refs$BMSY),'*',c(0.4,0.8))),70*SPMdata$Habitat/SPmodel1.out$median$q))
     names(Brefs) = c("LRP", "USR", "cpue70")
+    Brefs = rbind(Brefs,colSums(Brefs))
 
 
    # plot biomass 
-    SPMbiomass.plt(SPmodel1.out, yrs=yrs, CI=T,graphic='png',ht=8,wd=6,rows=5,alpha=c(0.5,0.05),name='SPM1',ymax=320,refs=Brefs/1000,refcol=c('red','gold','green'))
+    SPMbiomass.plt(SPmodel1.out, yrs=yrs, CI=T,graphic='png',ht=8,wd=6,rows=5,alpha=c(0.5,0.05),name='SPM1',ymax=320,refs=Brefs/1000,refcol=c('red','gold','green'),total=T)
 
     Blist=list()
     for(j in 1:5){
@@ -479,6 +480,14 @@ update.data=F # TRUE accesses data from database if on a DFO windows machine
   abline(h=50000,lty=3)
   legend('topleft', c("High (Fmsy)", "Medium (0.5Fmsy)", "Low (0.33M)"),title="Risk",lty=1,col=c('red','gold','green'),bg='white')
   dev.off()
+
+
+  Fref = c(0.045,0.026)
+  tacs=rbind(Biomass[29,-1]*(1-exp(-Fref[1])),  Biomass[29,-1]*(1-exp(-Fref[2])))
+  data.frame(Fref,tacs,total=rowSums(tacs))
+
+
+Biomass2016
 
 ################################ GRand Bank ################################
 
