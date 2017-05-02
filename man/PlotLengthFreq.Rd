@@ -4,7 +4,7 @@
 \alias{PlotLengthFreq}
 \title{PPlot the annual length frequency distributions.}
 \usage{
-PlotLengthFreq(lfdata, SelBank, stat = "cdf")
+PlotLengthFreq(lfdata, SelBank, stat = "lf", bw = 5)
 }
 \arguments{
 \item{lfdata}{is the length frequency data from the database. Columns should include AREA (3 for Grand Bank and 4 for Banquereau)
@@ -17,5 +17,8 @@ and "lf" returns the length frequency distribution.}
 }
 \description{
 Function to subset loci and populations
+}
+\author{
+Ryan Stanley
 }
 

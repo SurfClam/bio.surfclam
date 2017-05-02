@@ -4,8 +4,8 @@
 \alias{CpuePlot}
 \title{Plot the annual CPUE and associated trigger level.}
 \usage{
-CpuePlot(logdata, SelBank, stat = "mean", returnData = FALSE,
-  anon = FALSE)
+CpuePlot(logdata, SelBank, stat = NA, returnData = FALSE, anon = FALSE,
+  dodge = 0.5, verbose = TRUE)
 }
 \arguments{
 \item{logdata}{is the processed log data from the functions GetLogData() and ProcessLogData().}
@@ -22,6 +22,9 @@ dataframe summarizing the yearly averaged landings.}
 \item{anon}{(default=FALSE) should the output be anonymized for public consumption (no ship specific data).}
 }
 \description{
-Function to subset loci and populations
+CPUE plot
+}
+\author{
+Ryan Stanley
 }
 
