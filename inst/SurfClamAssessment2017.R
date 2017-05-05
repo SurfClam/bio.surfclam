@@ -119,7 +119,7 @@ update.data=F # TRUE accesses data from database if on a DFO windows machine
   with(surveyList$surveyData,points(slon,slat,pch=16,cex=0.2,col=rgb(0,1,0,0.2)))
 
   ClamMap2('Ban',isobath=seq(50,500,50),bathcol='grey',bathy.source='bathy')
-  addPolys(new.areas)
+  addPolys(CWzones)
   addLabels(data.frame(PID=1:5,label=1:5),polys=new.areas,placement="CENTROID",cex=2,font=2)
 
   # VMS Data
@@ -451,15 +451,31 @@ update.data=F # TRUE accesses data from database if on a DFO windows machine
     Brefs = rbind(Brefs,colSums(Brefs))
 
 
+
+
    # plot biomass 
     SPMbiomass.plt(SPmodel1.out, yrs=yrs, CI=T,graphic='png',ht=8,wd=6,rows=5,alpha=c(0.5,0.05),name='SPM1',ymax=320,refs=Brefs/1000,refcol=c('red','gold','green'),total=T)
 
     Blist=list()
+    pLPR=c()
+    pUSR=c()
+    pCPUE70=c()
+    TotalBposts=0
     for(j in 1:5){
         Bposts = sweep(SPmodel1.out$sims.list$P[,,j],1,FUN='*',SPmodel1.out$sims.list$K[,j]/1000)
+        TotalBposts = TotalBposts + Bposts
+
+      pLPR[j]=sum(Bposts[,29]>Brefs[j,1]/1000)/dim(Bposts)[1]
+      pUSR[j]=sum(Bposts[,29]>Brefs[j,2]/1000)/dim(Bposts)[1]
+      pCPUE70[j]=sum(Bposts[,29]>Brefs[j,3]/1000)/dim(Bposts)[1]
 
       Blist[[j]] =  quantile(Bposts[,29],  c(0.025,0.5,0.975))
     }
+      pLPR[6]=sum(TotalBposts[,29]>Brefs[6,1]/1000)/dim(TotalBposts)[1]
+      pUSR[6]=sum(TotalBposts[,29]>Brefs[6,2]/1000)/dim(TotalBposts)[1]
+      pCPUE70[6]=sum(TotalBposts[,29]>Brefs[6,3]/1000)/dim(TotalBposts)[1]
+      write.csv(data.frame(Area=c(1:5,"Total"),cbind(pLPR,pUSR,pCPUE70)),file.path( project.datadirectory("bio.surfclam"), "R","pRefs.csv"),row.names=F)
+
     Biomass2016 = data.frame(do.call("rbind",Blist))
     Biomass2016 = rbind(Biomass2016,colSums(Biomass2016))
 
