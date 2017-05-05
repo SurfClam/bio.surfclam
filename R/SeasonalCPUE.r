@@ -34,7 +34,7 @@ SeasonalCPUE<-function(vmslogdata,yrs,subpolys,lab='',graphic='R',wd=8,ht=11,err
 	annual.dat<-do.call("rbind",annual)
 
 	if(graphic=='pdf')pdf(file.path( project.datadirectory("bio.surfclam"),"figures",paste0("CPUE",lab,".pdf")), width=wd, height=ht)
-	if(graphic=='png')pdf(file.path( project.datadirectory("bio.surfclam"),"figures",paste0("CPUE",lab,".png")), width=wd, height=ht, units="in", res=300)
+	if(graphic=='png')png(file.path( project.datadirectory("bio.surfclam"),"figures",paste0("CPUE",lab,".png")), width=wd, height=ht, units="in", res=300)
 
 	par(mfrow=c(length(areas),1),mar=c(0,0,0,0),omi=c(0.5,1,0.5,0.5),las=1)
 
