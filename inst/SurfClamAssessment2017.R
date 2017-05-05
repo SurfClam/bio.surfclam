@@ -247,6 +247,7 @@ update.data=F # TRUE accesses data from database if on a DFO windows machine
   png(filename=file.path( project.datadirectory("bio.surfclam"),"figures",'VMSdensity.png'), 12,6, units="in", res=300)
 
   VMSden.poly = vmsDensity(vmslogdata,sig=0.2,res=0.1,lvl=30)
+  VMSden.poly = vmsDensity(vmslogdata,sig=0.2,res=0.1,lvl=10)
   dev.off()
 
       load(file.path( project.datadirectory("bio.surfclam"),'data','VMSdensity.rdata'))
@@ -351,7 +352,6 @@ update.data=F # TRUE accesses data from database if on a DFO windows machine
 ################ model run 1: 
 
   yrs = 1988:2016
-  SPMdataList$yrs = yrs  
   # Spatial Production Model Data
   SPMdata = SPMsetup(combineddata,Totalgrid.out,VMSden.poly,new.areas,yrs=yrs,effort.min=100000,r=5,n.min=7,cv=T,err='sd',cv.min=0.01)
 
@@ -359,7 +359,8 @@ update.data=F # TRUE accesses data from database if on a DFO windows machine
 
   #SPMdata = SPMsetup(combineddata,Totalgrid.out,VMSden.poly,CWzones,yrs=yrs,effort.min=100000,r=5,n.min=7)
   #SPMdata = SPMsetup(combineddata,Totalgrid.out,VMSden.poly,new.areas,yrs=yrs,effort.min=100000,r=5,n.min=7,cv=F)
-  SPMdataList = SPMdataList$SPMdataList
+  SPMdataList = SPMdata$SPMdataList
+  SPMdataList$yrs = yrs  
 
   SPMdataList$H = SPMdata$Habitat/mean(SPMdata$Habitat)
   #SPMdataList$CVW = 1/(SPMdataList$CV/SPMdata$meanCV)
@@ -407,7 +408,7 @@ update.data=F # TRUE accesses data from database if on a DFO windows machine
       #isigma2=       list(a=3,       b=0.5,         d="dgamma",    i1=2,   i2=3,   l=1   )    # process error (precision)
     ) 
 
-    SPmodel1.out=runBUGS("SPhyper1", SPMdataList, SPMpriors, SPMdataList$yrs, n = 600000, burn = 200000, thin = 10,debug=F,parameters=c(names(SPMpriors),'K','P','r','B0'),sw='jags',inits=F)
+    SPmodel2.out=runBUGS("SPhyper1", SPMdataList, SPMpriors, SPMdataList$yrs, n = 600000, burn = 200000, thin = 10,debug=F,parameters=c(names(SPMpriors),'K','P','r','B0'),sw='jags',inits=F)
     save(SPmodel1.out,file=file.path( project.datadirectory("bio.surfclam"), "data", "SPM1output.Rdata" ))
     #load(file=file.path( project.datadirectory("bio.surfclam"), "data", "SPM1output.Rdata" ))
     SPmodel1.out$median
