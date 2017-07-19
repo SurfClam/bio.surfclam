@@ -388,7 +388,7 @@ PlotPercentLarge(lfdata=lf.data,SelBank=2)
 <br>
 ```{r,echo=FALSE, message=FALSE, warning=FALSE,fig.align="center"}
 
-knitr::kable(largedata,caption="")
+knitr::kable(largedata2,caption="")
 
 ```
 
