@@ -1,0 +1,394 @@
+---
+output:
+  word_document:
+    reference_docx: mystyles.docx
+---
+
+##Offshore Arctic Surfclam (*Mactromeris polynyma*) science monitoring program
+###Commercial stock status indicators for Arctic Surfclam on Banquereau Bank and Grand Bank.
+
+
+##### 
+
+
+```{r,echo=FALSE,include=FALSE, cache=FALSE}
+library(dplyr)
+library(ggplot2)
+library(htmlTable)
+library(pander)
+library(xtable)
+library(lubridate)
+library(bio.surfclam)
+
+## Set up bio.directory if not specified in the RProfile.
+bio.directory <- "c:/Users/StanleyR/Documents/Github/bio"
+bio.datadirectory <- "c:/Users/StanleyR/Documents/Github/bio.data"
+
+#Load in data
+bio.surfclam::GetLogData(update=T) # if you need to update
+bio.surfclam::GetLFData(update=T) # if you need to update
+
+# or you can load locally
+# load("c:/Users/StanleyR/Documents/Surf clam/Assessment/processedLogdata.Rdata")
+# log.data <- processed.log.data
+# rm(processed.log.data)
+# load("c:/Users/StanleyR/Documents/Surf clam/Assessment/LFdata.Rdata")
+
+## Define thresholds for figure captions
+BB_cpue <- 75 
+BB_footprint <- 250
+BB_percentlarge <- 120
+BB_quota <- "24000"
+
+GB_cpue <- 50 
+GB_footprint <- 125
+GB_percentlarge <- 105
+GB_quota <- "14756"
+
+#What year is it?
+currentyear <- 2017
+
+#remove any observatiosn from the current year
+log.data <- log.data[log.data$year<currentyear,]
+```
+
+```{r,echo=FALSE, message=FALSE, warning=FALSE,fig.width=6,fig.height=5.5,fig.align="center"}
+p1 <- CpuePlot(logdata=log.data,SelBank = 1,stat="all",verbose=FALSE)
+
+p1+theme(legend.justification = c(0, 1), legend.position = c(0, 1))+guides(col=guide_legend(nrow=3,byrow=TRUE))
+
+```
+
+#**Figure 1** CPUE for the last five vessels active in the Arctic Surfclam fishery on Banquereau Bank. Symbols are coloured by vessel, dots are CPUE by trip and lines connect vessel year averages. Trigger CPUE for Banquereau Bank set at `r BB_cpue` g/m^2^.
+
+##### 
+
+#**Table 1** Catch (t), footprint (km^2^), CPUE and percent of survey area by year for the offshore clam fishery on Banquereau Bank. 
+<br>
+
+```{r,echo=FALSE,message=FALSE, warning=FALSE, results = 'asis'}
+
+Tabdata <- CatchTable(logdata=log.data,SelBank=1,tableNames = T)
+knitr::kable(Tabdata,caption="")
+
+```
+
+##### 
+
+```{r,echo=FALSE,fig.width=6,fig.height=6,fig.align="center"}
+
+Footprint(CatchData = Tabdata,SelBank=1)
+
+```
+
+#**Figure 2** Footprint (km^2^) and catch of the offshore clam fishery by Year on Banquereau Bank. Threshold level for fisheries footprint (`r BB_footprint` km^2^) and TAC denoted by dashed line.
+
+##### 
+
+```{r,echo=FALSE, message=FALSE, warning=FALSE,fig.align="center",fig.width=6,fig.height=5}
+OMSfished(log.data,SelBank=1)
+```
+
+#**Figure 3** Number of one minute squares fished by the offshore clam fishery by year on Banquereau Bank.
+
+##### 
+
+#**Table 2** Number of one minute squares fished per year in the offshore clam fishery on Banquereau Bank. 
+<br>
+
+```{r,echo=F}
+OMSData <- OMSfished(logdata=log.data,SelBank=1,returnData=TRUE)
+colnames(OMSData) <- c("Year","One minute squares fished")
+
+knitr::kable(OMSData,caption="") 
+
+```
+
+##### 
+
+```{r,echo=FALSE, message=FALSE, warning=FALSE,fig.align="center",fig.width=6,fig.height=5.5}
+lat.lim <- c(44.0, 45.25)
+long.lim <- c(-60.083, -57.0)
+bank.txt <- "Banquereau Bank"
+
+ClamMap2(logdata=log.data,SelBank = 1, area = 'custom',datadir="c:/Users/StanleyR/Documents/Github/bio.data/bio.surfclam/", 
+         ylim = lat.lim, xlim = long.lim, title = '',mapRes = 'HR',isobaths=seq(100,1000,100),
+        banks = T,  boundries = '', isobath = 'quick',
+        points.lst=NULL,
+        #points.lst = list(fish.points, polyProps = Points_Par),
+        lines.lst = NULL, poly.lst = NULL, image.lst = NULL, 
+        color.fun = tim.colors, color.adj = c(1, 100),
+        zlim = NA, res = 'high', bathcol = rgb(0, 0, 1, 0.5), grid = NULL)
+
+```
+
+#**Figure 4** Map of fishing locations for the Offshore Clam fishery for the last three years on Banquereau Bank. Years are plotted sequentially from `r paste0(max(log.data[log.data$bank==1,"year"],na.rm=T)-2,"-",max(log.data[log.data$bank==1,"year"],na.rm=T)," ","(yellow, green and red respectively)")`. 
+
+##### 
+
+```{r,echo=FALSE, message=FALSE, warning=FALSE,fig.align="center",fig.width=6,fig.height=5}
+
+PlotPercentLarge(lfdata=lf.data,SelBank=1)
+
+```
+
+#**Figure 5** Precent of large (>`r BB_percentlarge` mm) Arctic Surfclams in unsorted commercial catch on Banquereau Bank. 
+
+##### 
+
+#**Table 3** Percent of large Arctic Surfclams in unsorted catch on Banquereau Bank. 
+<br>
+```{r,echo=FALSE, message=FALSE, warning=FALSE,fig.align="center"}
+largedata <- PlotPercentLarge(lfdata=lf.data,SelBank=1,returnData=T)
+
+knitr::kable(largedata,caption="")
+
+```
+
+##### 
+
+```{r,echo=FALSE, message=FALSE, warning=FALSE,fig.align="center",fig.width=6,fig.height=7.5}
+
+binwidth=5
+PlotLengthFreq(lfdata=lf.data,SelBank=1,stat = "lf",bw=binwidth)
+
+```
+
+#**Figure 6** Length frequencies of unsorted Arctic Surfclam in commercial catches on Banquereau Bank. Data is binned at `r binwidth` cm increments.
+
+##### 
+
+```{r,echo=FALSE, message=FALSE, warning=FALSE,fig.width=6,fig.height=5.5,fig.align="center"}
+p1 <- CpuePlot(logdata=log.data,SelBank = 2,stat="all",verbose=FALSE)
+
+p1+theme(legend.justification = c(0, 1), legend.position = c(0, 1))+guides(col=guide_legend(nrow=3,byrow=TRUE))
+```
+
+#**Figure 7** CPUE for the last five vessels active in the Arctic Surfclam fishery on Grand Bank. Symbols are coloured by vessel, dots are CPUE by trip and lines connect vessel year averages. Trigger CPUE for Grand Bank set at `r GB_cpue` g/m^2^.
+
+##### 
+
+#**Table 4** Catch (t), footprint (km^2^), CPUE and percent of survey area by year for the offshore clam fishery on Grand Bank. 
+<br>
+
+```{r,echo=FALSE,message=FALSE, warning=FALSE, results = 'asis'}
+
+Tabdata2 <- CatchTable(logdata=log.data,SelBank=2,tableNames = T)
+knitr::kable(Tabdata2,caption="")
+
+```
+
+##### 
+
+```{r,echo=FALSE,fig.width=6,fig.height=6,fig.align="center"}
+
+Footprint(CatchData = Tabdata,SelBank=2)
+
+```
+
+#**Figure 8** Footprint (km^2^) and catch of the offshore clam fishery by Year on Grand Bank. Threshold level for fisheries footprint (`r GB_footprint` km^2^) and TAC denoted by dashed line.
+
+##### 
+
+```{r,echo=FALSE, message=FALSE, warning=FALSE,fig.align="center",fig.width=6,fig.height=5}
+OMSfished(logdata=log.data,SelBank=2)
+```
+
+#**Figure 9** Number of one minute squares fished by the offshore clam fishery by year on Grand Bank.
+
+##### 
+
+#**Table 5** Number of one minute squares fished per year in the offshore clam fishery on Grand Bank. 
+<br>
+
+```{r,echo=F}
+OMSData <- OMSfished(logdata=log.data,SelBank=2,returnData=TRUE)
+colnames(OMSData) <- c("Year","One minute squares fished")
+
+knitr::kable(OMSData,caption="") 
+
+```
+
+##### 
+
+```{r,echo=FALSE, message=FALSE, warning=FALSE,fig.align="center",fig.width=6,fig.height=5.5}
+lat.lim <- c(43.0, 46.5)
+long.lim <- c(-52.0, -48.5)
+bank.txt <- "Grand Bank"
+
+ClamMap2(logdata=log.data,SelBank = 2, area = 'custom',datadir="c:/Users/StanleyR/Documents/Github/bio.data/bio.surfclam/", 
+         ylim = lat.lim, xlim = long.lim, title = '',mapRes = 'HR',isobaths=seq(100,1000,100),
+        banks = T,  boundries = '', isobath = 'quick',
+        points.lst=NULL,
+        #points.lst = list(fish.points, polyProps = Points_Par),
+        lines.lst = NULL, poly.lst = NULL, image.lst = NULL, 
+        color.fun = tim.colors, color.adj = c(1, 100),
+        zlim = NA, res = 'high', bathcol = rgb(0, 0, 1, 0.5), grid = NULL)
+
+```
+
+#**Figure 10** Map of fishing locations for the Offshore Clam fishery for the lasty three years on Grand Bank. Years are plotted sequentially from `r paste0(max(log.data[log.data$bank==2,"year"],na.rm=T)-2,"-",max(log.data[log.data$bank==2,"year"],na.rm=T)," ","(yellow, green and red respectively)")`. 
+
+##### 
+
+```{r,echo=FALSE, message=FALSE, warning=FALSE,fig.align="center",fig.width=6,fig.height=5}
+
+PlotPercentLarge(lfdata=lf.data,SelBank=2)
+
+```
+
+#**Figure 11** Precent of large (>`r GB_percentlarge` mm) Arctic Surfclams in unsorted commercial catch on Grand Bank. 
+
+##### 
+
+#**Table 6** Percent of large Arctic Surfclams in unsorted catch on Grand Bank. 
+<br>
+```{r,echo=FALSE, message=FALSE, warning=FALSE,fig.align="center"}
+largedata2 <- PlotPercentLarge(lfdata=lf.data,SelBank=2,returnData=T)
+
+knitr::kable(largedata2,caption="")
+
+```
+
+##### 
+
+```{r,echo=FALSE, message=FALSE, warning=FALSE,fig.align="center",fig.width=6,fig.height=7.5}
+binwidth=5
+PlotLengthFreq(lfdata=lf.data,SelBank=2,stat = "lf",bw=binwidth)
+
+```
+
+#**Figure 12** Length frequencies of unsorted Arctic Surfclam in commercial catches on Grand Bank. Data is binned at `r binwidth` cm increments.
+ 
+##### 
+
+
+##Annex 1: Secondary indicators report for public distribution
+
+
+##### 
+
+###### __**Status of the fishery for Arctic Surfclam in Atlantic Canada in `r Tabdata[nrow(Tabdata),"Year"] `**__
+
+###### The annual monitoring program for the status of the fishery for Arctic Surfclam in Atlantic Canada is described in the document “Offshore Surfclam Science Monitoring Program”. Three indicators will be used to monitor the fishery: catch per unit effort (CPUE); the spatial extent or footprint of the fishery; and the abundance of older/larger clams in the catch. 
+
+###### **Banquereau Bank**
+###### Landings of Arctic Surfclam from the fishery on Banquereau Bank in `r Tabdata[nrow(Tabdata),"Year"]`, as indicated by the logbook data provided by industry to DFO Science, were `r as.character(Tabdata[nrow(Tabdata),grep("Catch",names(Tabdata))])` t, relative to a quota of `r BB_quota` t (Table 1).
+
+###### CPUE calculated from logbook data provided by industry for the fishery on Banquereau Bank in `r Tabdata[nrow(Tabdata),"Year"]` indicates an annual average CPUE of `r Tabdata[nrow(Tabdata),"CPUE"]` g/m^2^ (Table 1, Figure 1). This is `r if(Tabdata[nrow(Tabdata),"CPUE"]>Tabdata[nrow(Tabdata)-1,"CPUE"]){"greater"}else{"less"}` than the value of `r Tabdata[nrow(Tabdata)-1,"CPUE"]` g/m^2^ in `r Tabdata[nrow(Tabdata),"Year"]-1`, and `r if(Tabdata[nrow(Tabdata),"CPUE"]>BB_cpue){"above"}else{"below"}` the trigger level of `r BB_cpue` g/m^2^.
+
+###### The spatial extent or footprint of the fishery on Banquereau Bank in `r Tabdata[nrow(Tabdata),"Year"]` was `r Tabdata[nrow(Tabdata),grep("Dredged",names(Tabdata))]` km^2^ (Figure 2, Table 1). This is `r if(Tabdata[nrow(Tabdata),grep("Dredged",names(Tabdata))]>Tabdata[nrow(Tabdata)-1,grep("Dredged",names(Tabdata))]){"higher"}else{"lower"}` than the value of `r Tabdata[nrow(Tabdata)-1,grep("Dredged",names(Tabdata))]` km^2^ in `r Tabdata[nrow(Tabdata),"Year"]-1`, and is `r if(Tabdata[nrow(Tabdata),grep("Dredged",names(Tabdata))]>BB_footprint){"above"}else{"below"}` the threshold level of `r BB_footprint` km^2^.
+
+###### The proportion of older/larger Arctic Surfclam in the unsorted catch from the fishery on Banquereau Bank in `r Tabdata[nrow(Tabdata),"Year"]`, as indicated by onboard sampling data provided by industry, was `r largedata[nrow(largedata),grep("large",names(largedata))]`% ≥ `r BB_percentlarge` mm (Figure 3, Table 2). This value is above the trigger level of 1.0% ≥ `r BB_percentlarge` mm and has `r if(largedata[nrow(largedata),grep("large",names(largedata))]>largedata[nrow(largedata)-1,grep("large",names(largedata))]){"increased"}else{"decreased"}` since `r Tabdata[nrow(Tabdata)-1,"Year"]` (`r largedata[nrow(largedata)-1,grep("large",names(largedata))]`%).
+
+###### **Grand Bank**
+###### Landings of Arctic Surfclam from the fishery on Grand Bank in `r Tabdata2[nrow(Tabdata2),"Year"]`, as indicated by the logbook data provided by industry to DFO Science, were `r as.character(Tabdata2[nrow(Tabdata2),grep("Catch",names(Tabdata2))])` t, relative to a quota of `r GB_quota` t (Table 3).
+
+###### CPUE calculated from logbook data provided by industry for the fishery on Grand Bank in `r Tabdata2[nrow(Tabdata2),"Year"]` indicates an annual average CPUE of `r Tabdata2[nrow(Tabdata2),"CPUE"]` g/m^2^ (Table 3, Figure 4). This is `r if(Tabdata2[nrow(Tabdata2),"CPUE"]>Tabdata2[nrow(Tabdata2)-1,"CPUE"]){"greater"}else{"less"}` than the value of `r Tabdata2[nrow(Tabdata2)-1,"CPUE"]` g/m^2^ in `r Tabdata2[nrow(Tabdata2),"Year"]-1`, and `r if(Tabdata2[nrow(Tabdata2),"CPUE"]>GB_cpue){"above"}else{"below"}` the trigger level of `r GB_cpue` g/m^2^. 
+
+###### The spatial extent or footprint of the fishery on Grand Bank in `r Tabdata2[nrow(Tabdata2),"Year"]` was `r Tabdata2[nrow(Tabdata2),grep("Dredged",names(Tabdata2))]` km^2^ (Figure 5, Table 3). This is `r if(Tabdata2[nrow(Tabdata2),grep("Dredged",names(Tabdata2))]>Tabdata2[nrow(Tabdata2)-1,grep("Dredged",names(Tabdata2))]){"higher"}else{"lower"}` than the value of `r Tabdata2[nrow(Tabdata2)-1,grep("Dredged",names(Tabdata2))]` km^2^ in `r Tabdata2[nrow(Tabdata2),"Year"]-1`, and is `r if(Tabdata2[nrow(Tabdata2),grep("Dredged",names(Tabdata2))]>GB_footprint){"above"}else{"below"}` the threshold level of `r GB_footprint` km^2^.
+
+###### The proportion of older/larger Arctic Surfclam in the unsorted catch from the fishery on Grand Bank in `r Tabdata2[nrow(Tabdata2),"Year"]`, as indicated by onboard sampling data provided by industry, was `r largedata2[nrow(largedata2),grep("large",names(largedata2))]`% ≥ `r GB_percentlarge` mm (Figure 6, Table 4). This value is above the trigger level of 1.0% ≥ `r GB_percentlarge` mm and has `r if(largedata2[nrow(largedata2),grep("large",names(largedata2))]>largedata2[nrow(largedata2)-1,grep("large",names(largedata2))]){"increased"}else{"decreased"}` since `r Tabdata2[nrow(Tabdata2)-1,"Year"]` (`r largedata2[nrow(largedata2)-1,grep("large",names(largedata2))]`%).
+
+##### 
+
+#**Table 1** Catch (t), footprint (km^2^), and CPUE  by year for the offshore clam fishery on Banquereau Bank. 
+<br>
+
+```{r,echo=FALSE,message=FALSE, warning=FALSE, results = 'asis'}
+
+knitr::kable(Tabdata[,-grep("%",names(Tabdata))],caption="")
+
+```
+
+##### 
+
+```{r,echo=FALSE,message=FALSE, warning=FALSE, results = 'asis'}
+
+CpuePlot(logdata=log.data,SelBank=1,stat="means",anon=T)
+
+```
+
+#**Figure 1** Annual CPUE for the last five active vessels in the Arctic Surfclam fishery on Banquereau Bank. Trigger CPUE for Banquereau Bank set at `r BB_cpue` g/m^2^.
+
+##### 
+
+```{r,echo=FALSE,fig.width=6,fig.height=6,fig.align="center"}
+
+Footprint(CatchData = Tabdata,SelBank=1)
+
+```
+
+#**Figure 2** Footprint (km^2^) and catch of the offshore clam fishery by Year on Banquereau Bank. Threshold level for fisheries footprint (`r BB_footprint` km^2^) and TAC denoted by dashed line.
+
+##### 
+
+```{r,echo=FALSE, message=FALSE, warning=FALSE,fig.align="center",fig.width=6,fig.height=5}
+
+PlotPercentLarge(lfdata=lf.data,SelBank=1)
+
+```
+
+#**Figure 3** Precent of large (>`r BB_percentlarge` mm) Arctic Surfclams in unsorted commercial catch on Banquereau Bank. 
+
+##### 
+
+#**Table 2** Percent of large Arctic Surfclams in unsorted catch on Banquereau Bank. 
+<br>
+```{r,echo=FALSE, message=FALSE, warning=FALSE,fig.align="center"}
+
+knitr::kable(largedata,caption="")
+
+```
+
+##### 
+
+#**Table 3** Catch (t), footprint (km^2^), and CPUE  by year for the offshore clam fishery on Grand Bank. 
+<br>
+
+```{r,echo=FALSE,message=FALSE, warning=FALSE, results = 'asis'}
+
+knitr::kable(Tabdata2[,-grep("%",names(Tabdata2))],caption="")
+
+```
+
+##### 
+
+```{r,echo=FALSE,message=FALSE, warning=FALSE, results = 'asis'}
+
+CpuePlot(logdata=log.data,SelBank=2,stat="means",anon=T)
+
+```
+
+#**Figure 4** Annual CPUE for the last five active vessels in the Arctic Surfclam fishery on Grand Bank. Trigger CPUE for Grand Bank set at `r GB_cpue` g/m^2^.
+
+##### 
+
+```{r,echo=FALSE,fig.width=6,fig.height=6,fig.align="center"}
+
+Footprint(CatchData = Tabdata2,SelBank=2)
+
+```
+
+#**Figure 5** Footprint (km^2^) and catch of the offshore clam fishery by Year on Grand Bank. Threshold level for fisheries footprint (`r GB_footprint` km^2^) and TAC denoted by dashed line.
+
+##### 
+
+```{r,echo=FALSE, message=FALSE, warning=FALSE,fig.align="center",fig.width=6,fig.height=5}
+
+PlotPercentLarge(lfdata=lf.data,SelBank=2)
+
+```
+
+#**Figure 6** Precent of large (>`r GB_percentlarge` mm) Arctic Surfclams in unsorted commercial catch on Grand Bank. 
+
+##### 
+
+#**Table 4** Percent of large Arctic Surfclams in unsorted catch on Grand Bank. 
+<br>
+```{r,echo=FALSE, message=FALSE, warning=FALSE,fig.align="center"}
+
+knitr::kable(largedata,caption="")
+
+```
+
