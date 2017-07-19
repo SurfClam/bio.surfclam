@@ -13,7 +13,7 @@ CatchTable <- function(logdata, SelBank, Area=NA,tableNames=FALSE){
   ##############################################################################
   ## catch and effort table, still using same data
   ##############################################################################
-  names(logdata) <- toupper(names(lodata))
+  names(logdata) <- toupper(names(logdata))
 
   logdata <- logdata[logdata$BANK == SelBank,]
 
