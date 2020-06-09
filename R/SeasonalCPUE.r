@@ -1,5 +1,5 @@
 #' @export
-SeasonalCPUE<-function(vmslogdata,yrs,subpolys,lab='',graphic='R',wd=8,ht=11,err='sd',effort.min=0.015,...){
+SeasonalCPUE<-function(vmslogdata,yrs,subpolys,lab='',graphic='R',wd=8,ht=11,err='sd',effort.min=0.015,annual.pts=T,...){
 
 	
 	if(missing(yrs))yrs<-unique(vmslogdata$year)
@@ -22,7 +22,8 @@ SeasonalCPUE<-function(vmslogdata,yrs,subpolys,lab='',graphic='R',wd=8,ht=11,err
 		daily[[i]]$CPUE<-daily[[i]]$CATCH/daily[[i]]$EFFORT
 
 		# annual
-		day<-with(tmpdata,tapply(vmsdatelocal,year,mean,na.rm=T))
+		if(annual.pts==T)day<-as.Date(paste0(sort(unique(tmpdata$year)),"-01-01"))
+		if(annual.pts==F)day<-with(tmpdata,tapply(vmsdatelocal,year,mean,na.rm=T))
 		tmp=jackknife(with(tmpdata,data.frame(time=year,catch=C/1000,effort=A/10^6)),err=err)
 		annual[[i]]<-data.frame(AREA=areas[i],DATE=day,CATCH=tmp$catch,EFFORT=tmp$effort,CPUE=tmp$cpue,CV = sqrt(tmp$cpue.var)/tmp$cpue)
 
